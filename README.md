@@ -11,7 +11,7 @@ In the terminal, install _libsvm_.
 ```
 pip install libsvm
 ```
-Parameters for using the SVM to recognise patterns:
+Parameters for using the SVM to recognise patterns or prediction:
 
 -	-dataset: specifies the database path. By default, the _heart_scale_ and _bodyfat_scale_ databases are used for classification and regression, respectively.
 
@@ -35,6 +35,10 @@ In the terminal, install _scikit-learn_.
 ```
 pip install scikit-learn
 ```
+
+Parameters for using the SVM with _k-fold_ cross-validation:
+
+-	-dataset: specifies the database path. By default, the _heart_scale_ and _bodyfat_scale_ databases are used for classification and regression, respectively.
 
 ```
 python svmKfold.py
