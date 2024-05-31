@@ -64,6 +64,18 @@ The kernels generalize well. But, this depends on choosing good parameters (C, g
   <figcaption>Figure 2: Unsuccessful performances of _kernel_ Linear on non-linearly separable datasets.</figcaption>
 </figure>
 
+
+
+<figure>
+  <img src="https://github.com/DejavuForensics/SVM/blob/main/EN-US/SVM_1.png" alt="Successful performances of the _kernels_ compatible with the datasets.">
+  <figcaption>Figure 1: Successful performances of the _kernels_ compatible with the datasets.</figcaption>
+</figure>
+
+<figure>
+  <img src="https://github.com/DejavuForensics/SVM/blob/main/EN-US/SVM_2.png" alt=" Unsuccessful performances of _kernel_ Linear on non-linearly separable datasets.">
+  <figcaption>Figure 2: Unsuccessful performances of _kernel_ Linear on non-linearly separable datasets.</figcaption>
+</figure>
+
 ### Follow the instructions:
 
 Parameters for using the SVM with optimised parameter study:
