@@ -1,11 +1,20 @@
 # SVM
 
-## SVM Classifier: Pattern Recognition
+## SVM Classifier: Classification/Regression
 
 The SVM is a statistical learning machine. It is not based on the human brain. Its explicit goal is statistical learning theory. 
 Classical neural networks aim to find a hyperplane. The hyperplane separates the classes for the target application.
 There can be several hyperplanes separating the data correctly. SVM is a classifier that finds a better hyperplane than others.
 
+### Follow the instructions
+In the terminal, install _libsvm_.
+```
+pip install libsvm
+```
+
+```
+python svm.py
+```
 ## SVM classifier: K-fold
 Cross-validation is a statistical technique. Researchers use it to assess the performance of a machine learning model. It divides the data set into parts, or ‘folds’. You can train and test the model many times on different data subsets. The aim is to ensure that the model generalises well to new and unseen data. The k-fold method is a type of cross-validation. In it, the data set is randomly split into k equal subsets (or folds). The k-fold involves the following steps:
 
@@ -17,6 +26,14 @@ Cross-validation is a statistical technique. Researchers use it to assess the pe
 
 - **Average and standard deviation of results**: performance metrics are calculated for each of the k runs. For each run, we calculate the average and standard deviation. We then average these metrics. This gives the model's final performance.
 
+In the terminal, install _libsvm_.
+```
+pip install libsvm
+```
+
+```
+python svm.py
+```
 
 ## SVM Classifier Parameters
 
