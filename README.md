@@ -31,7 +31,7 @@ Cross-validation is a statistical technique. Researchers use it to assess the pe
 
 ### Follow the instructions:
 
-In the terminal, install _libsvm_.
+In the terminal, install _scikit-learn_.
 ```
 pip install scikit-learn
 ```
@@ -47,6 +47,12 @@ One big challenge in machine learning is finding a kernel. It optimises the deci
 So, the network may generalize well. This depends on choosing an appropriate \textit{kernel}. The best \textit{kernel} may be dependent on the problem to be solved. As a side effect, looking at different \textit{kernels} is costly. It requires cross-validation and different initial conditions. You may need to investigate different \textit{kernels}. A mismatched \textit{kernel} may cause bad results in the neural network.
 
 As a counter-example, look at the Linear \textit{kernel}. It was applied to the Sigmoid and Sine distributions shown in Fig. \ref{fig:ELM2} (a) and Fig. \ref{fig:ELM2} (b), respectively.
+
+### Follow the instructions:
+
+Parameters for using the SVM with optimised parameter study:
+
+-	-dataset: specifies the database path. By default, the _heart_scale_ and _bodyfat_scale_ databases are used for classification and regression respectively.
 
 ```
 python svmParameters.py
@@ -65,7 +71,7 @@ No terminal, instale o _libsvm_.
 pip install libsvm
 ```
 
-Parâmetros de uso do SVM visando reconhecimento de padrão:
+Parâmetros de uso do SVM:
 
 -	-dataset: especifica o caminho da base de dados. Por padrão, as bases de dados _heart_scale_ e _bodyfat_scale_ são empregadas na classificação e regressão, respectivamente.
 
@@ -85,11 +91,20 @@ O método k-fold é uma forma específica de validação cruzada onde o conjunto
 
 - **Média e desvio padrão dos resultados**: as métricas de desempenho são calculadas para cada uma das k execuções e, em seguida, a média dessas métricas é computada para obter uma estimativa final do desempenho do modelo.
 
+### Siga as instruções:
+No terminal, instale o _scikit-learn_.
+```
+pip install scikit-learn
+```
 
-\section{Parâmetros do Classificador SVM}
-\index{Parâmetros do Classificador SVM}
-\label{sec:6.3}
-\hspace{\parindent}
+Parâmetros de uso do SVM dotado de validação cruzada _k-fold_:
+
+-	-dataset: especifica o caminho da base de dados. Por padrão, as bases de dados _heart_scale_ e _bodyfat_scale_ são empregadas na classificação e regressão, respectivamente.
+
+```
+python svmKfold.py
+```
+## Parâmetros do Classificador SVM
 
 Um dos grandes desafios, em máquinas de aprendizado estatístico, diz respeito a encontrar um \textit{kernel} de modo que otimize a fronteira de decisão entre as classes de uma dada aplicação. Em redes neurais ELM, um \textit{kernel} Linear, por exemplo, é capaz de resolver um problema linearmente separável, como o visto na \ref{fig:ELM1} (a). Seguindo o mesmo raciocínio, \textit{kernels} Sigmóide, RBF  e Senoide são capazes de resolver problemas separáveis por função Sigmoidal, Radial e Senoidal, vistos na Fig. \ref{fig:ELM1} (b), na Fig. \ref{fig:ELM1} (c) e na  Fig. \ref{fig:ELM1} (d), respectivamente. 
 
@@ -115,16 +130,13 @@ Uma boa capacidade de generalização desses \textit{kernels} também depende de
 
 \clearpage
 
-\paragraph{Siga as instruções: } \vspace{0.50cm}
-\begin{remark}{1}
-Faça o \textit{Download} do \textit{script libsvm\_parameters.py} responsável pelos cliques automatizados no
-\href{https://drive.google.com/drive/u/0/folders/1TRkNxE6dyVke4-0gUSNu8E33a2bKZtrc}{\chadded{presente link (pasta Cap. 6)}}. 
-\end{remark}
 
-\begin{remark}{2}
-No console, para otimizar os parâmetros do classificador SVM. 
+### Siga as instruções:
 
-\begin{verbatim}
-    python libsvm_parameters.py
-\end{verbatim}
-\end{remark}
+Parâmetros de uso do SVM com estudo de parâmetros otimizados:
+
+-	-dataset: especifica o caminho da base de dados. Por padrão, as bases de dados _heart_scale_ e _bodyfat_scale_ são empregadas na classificação e regressão, respectivamente.
+
+```
+python svmParameters.py
+```
