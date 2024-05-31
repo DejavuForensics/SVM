@@ -46,15 +46,23 @@ python svmKfold.py
 
 ## SVM Parameters
 
-One big challenge in machine learning is finding a kernel. It optimises the decision boundary between the classes of a given application. In ELM neural networks, a Linear _kernel_ can solve a linearly separable problem. This is the kind seen in \ref{fig:ELM1} (a). Sigmoid, RBF, and Sinusoid _kernels_ follow the same reasoning. They can solve problems separable by Sigmoid, Radial, and Sinusoidal functions. This is as seen in Fig. \ref{fig:ELM1} (b), Fig. \ref{fig:ELM1} (c) and Fig. \ref{fig:ELM1} (d), respectively. 
+In statistical machine learning, a major challenge is finding a kernel. The kernel optimizes the decision boundary between classes in an application. In SVM, a Linear kernel, for example, is capable of solving a linearly separable problem such as that seen in Fig. 1 (a). Following the same logic. Sigmoid, RBF, and Sine kernels can solve separable problems. They are separable by Sigmoid, Radial, and Sine functions. This is seen in Fig. 1 (b), Fig. 1 (c) and Fig. 1 (d), respectively. 
 
-So, the network may generalize well. This depends on choosing an appropriate _kernel_. The best _kernel_ may be dependent on the problem to be solved. As a side effect, looking at different _kernels_ is costly. It requires cross-validation and different initial conditions. You may need to investigate different _kernels_. A mismatched _kernel_ may cause bad results in the neural network.
+A good generalisation in machine learning may depend on a good kernel choice. The best kernel may be subordinate to the problem to be solved. Investigating different kernels has a side effect. It is a costly process. It involves cross-validation and different random starts. Investigating different kernels may be necessary. Otherwise, a neural network with a mismatched kernel may generate bad results.
 
-As a counter-example, look at the Linear _kernel_. It was applied to the Sigmoid and Sine distributions shown in Fig. \ref{fig:ELM2} (a) and Fig. \ref{fig:ELM2} (b), respectively.
+As a counter-example, look at the use of the Linear kernel. It was applied to the Sigmoid and Sine distributions shown in Fig. 2 (a) and Fig. 2 (b), respectively. The classification accuracies shown in Fig. 2 (a) and Fig. 2 (b) are 78.71% and 73.00% respectively. You can see this visually. The Linear kernel does not map the boundaries of the Sigmoid and Sinusoid distributions well.
 
+The kernels generalize well. But, this depends on choosing good parameters (C, gamma). The cost parameter C balances margin width and reduces classification error. It balances these factors relative to the training set. The kernel gamma parameter controls the decision limit depending on the classes. There is no universal method for choosing the parameters (C, gamma). C and gamma increase fast. They follow the function 10 to the power of n. Here, n ranges from -3 to 3. The hypothesis is to check if these parameters differ from the standards. The standards are (C, gamma) = (10<sup>0</sup>, 10<sup>0>). The parameters can generate better accuracies.
 
-![Logo do GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)
-![Logo do GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)
+<figure>
+  <img src=“https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_1.png” alt=“Successful performances of the _kernels_ compatible with the datasets.”>
+  <figcaption>Figure 1: Successful performances of the _kernels_ compatible with the datasets.</figcaption>
+</figure>
+
+<figure>
+  <img src=“https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_2.png” alt=“Unsuccessful performances of the Linear _kernel_ on non-linearly separable datasets.”>
+  <figcaption>Figure 2: Unsuccessful performances of _kernel_ Linear on non-linearly separable datasets.</figcaption>
+</figure>
 
 ### Follow the instructions:
 
@@ -117,10 +125,9 @@ python svmKfold.py
 Um dos grandes desafios, em máquinas de aprendizado estatístico, diz respeito a encontrar um _kernel_ de modo que otimize a fronteira de decisão entre as classes de uma dada aplicação. Em SVM, um _kernel_ Linear, por exemplo, é capaz de resolver um problema linearmente separável, como o visto na Fig. 3 (a). Seguindo o mesmo raciocínio, _kernels_ Sigmóide, RBF  e Senoide são capazes de resolver problemas separáveis por função Sigmoidal, Radial e Senoidal, vistos na  Fig. 3 (b), na  Fig. 3 (c) e na Fig. 3 (d), respectivamente. 
 
 Então uma boa capacidade de generalização da _machine learning_ pode depender de uma escolha ajustada do _kernel_. O melhor _kernel_ pode estar subordinado ao problema a ser resolvido. Como efeito colateral, a investigação de diferentes _kernels_ é geralmente um processo custoso envolvendo validação cruzada combinada com diferentes condições iniciais aleatórias. A investigação de distintos _kernels_, no entanto, pode ser necessária, caso contrário a rede neural composta, por um _kernel_ desajustado, por gerar resultados não satisfatórios.
-
 Como contra-exemplo, observe o emprego do _kernel_ Linear aplicado a distribuições Sigmóide e Senoide apresentados na Fig. 4 (a) e na Fig. 4 (b), respectivamente. As precisões das classificações expostas na Fig. 4 (a) e na Fig. Fig. 4 (b) são de 78,71% e 73,00%, respectivamente. Visualmente, é possível observar que o _kernel_ Linear não mapeia as fronteiras de decisões das distribuições Sigmóide e Senoide de forma adequada.
 
-Uma boa capacidade de generalização desses _kernels_ também depende de uma escolha ajustada de parâmetros (C, gamma). O parâmetro de custo C se refere a um ponto de equilíbrio razoável entre a largura da margem do hiperplano e a minimização do erro de classificação em relação ao conjunto de treinamento. O parâmetro do _kernel_ gamma controla o limite de decisão em função das classes. Não existe um método universal no sentido de escolher os parâmetros (C, gamma). No presente trabalho, os parâmetros C e gamma variam exponencialmente em sequências crescentes, matematicamente de acordo com a função 10<sup>n</sup>, onde n={-3, -2, -1, 0, 1, 2, 3 }. A hipótese é verificar se esses parâmetros distintos dos padrões; (C, gamma) = ( 10<sup>0</sup>, 10<sup>0</sup>), são capazes de gerar melhores acurácias.  
+Uma boa capacidade de generalização desses _kernels_ também depende de uma escolha ajustada de parâmetros (C, gamma). O parâmetro de custo C se refere a um ponto de equilíbrio razoável entre a largura da margem do hiperplano e a minimização do erro de classificação em relação ao conjunto de treinamento. O parâmetro do _kernel_ gamma controla o limite de decisão em função das classes. Não existe um método universal no sentido de escolher os parâmetros (C, gamma). No presente trabalho, os parâmetros C e gamma variam exponencialmente em sequências crescentes, matematicamente de acordo com a função 10<sup>n</sup>, onde n={-3, -2, -1, 0, 1, 2, 3 }. A hipótese é verificar se esses parâmetros distintos dos padrões; (C, gamma) = ( 10<sup>0</sup>, 10<sup>0</sup>)$, são capazes de gerar melhores acurácias.  
 
 <figure>
   <img src="https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_1.png" alt="Atuações bem-sucedidas dos _kernels_ compatíveis com os conjuntos de dados.">
