@@ -101,6 +101,11 @@ O método k-fold é uma forma específica de validação cruzada onde o conjunto
 ![Logo do GitHub](https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_1.png)
 ![Logo do GitHub](https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_2.png)
 
+<figure>
+  <img src="https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_2.png" alt="Exemplo de Uso">
+  <figcaption>Figura 2: Exemplo de Uso</figcaption>
+</figure>
+
 ### Siga as instruções:
 No terminal, instale o _scikit-learn_.
 ```
