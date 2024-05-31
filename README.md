@@ -52,6 +52,10 @@ So, the network may generalize well. This depends on choosing an appropriate \te
 
 As a counter-example, look at the Linear \textit{kernel}. It was applied to the Sigmoid and Sine distributions shown in Fig. \ref{fig:ELM2} (a) and Fig. \ref{fig:ELM2} (b), respectively.
 
+
+![Logo do GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)
+![Logo do GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)
+
 ### Follow the instructions:
 
 Parameters for using the SVM with optimised parameter study:
@@ -94,6 +98,8 @@ O método k-fold é uma forma específica de validação cruzada onde o conjunto
 - **Repetição do processo**: esse processo é repetido k vezes, cada vez com uma dobra diferente atuando como conjunto de teste.
 
 - **Média e desvio padrão dos resultados**: as métricas de desempenho são calculadas para cada uma das k execuções e, em seguida, a média dessas métricas é computada para obter uma estimativa final do desempenho do modelo.
+![Logo do GitHub](https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_1.png)
+![Logo do GitHub](https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_2.png)
 
 ### Siga as instruções:
 No terminal, instale o _scikit-learn_.
