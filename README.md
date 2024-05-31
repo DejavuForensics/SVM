@@ -46,11 +46,11 @@ python svmKfold.py
 
 ## SVM Parameters
 
-One big challenge in machine learning is finding a kernel. It optimises the decision boundary between the classes of a given application. In ELM neural networks, a Linear \textit{kernel} can solve a linearly separable problem. This is the kind seen in \ref{fig:ELM1} (a). Sigmoid, RBF, and Sinusoid \textit{kernels} follow the same reasoning. They can solve problems separable by Sigmoid, Radial, and Sinusoidal functions. This is as seen in Fig. \ref{fig:ELM1} (b), Fig. \ref{fig:ELM1} (c) and Fig. \ref{fig:ELM1} (d), respectively. 
+One big challenge in machine learning is finding a kernel. It optimises the decision boundary between the classes of a given application. In ELM neural networks, a Linear _kernel_ can solve a linearly separable problem. This is the kind seen in \ref{fig:ELM1} (a). Sigmoid, RBF, and Sinusoid _kernels_ follow the same reasoning. They can solve problems separable by Sigmoid, Radial, and Sinusoidal functions. This is as seen in Fig. \ref{fig:ELM1} (b), Fig. \ref{fig:ELM1} (c) and Fig. \ref{fig:ELM1} (d), respectively. 
 
-So, the network may generalize well. This depends on choosing an appropriate \textit{kernel}. The best \textit{kernel} may be dependent on the problem to be solved. As a side effect, looking at different \textit{kernels} is costly. It requires cross-validation and different initial conditions. You may need to investigate different \textit{kernels}. A mismatched \textit{kernel} may cause bad results in the neural network.
+So, the network may generalize well. This depends on choosing an appropriate _kernel_. The best _kernel_ may be dependent on the problem to be solved. As a side effect, looking at different _kernels_ is costly. It requires cross-validation and different initial conditions. You may need to investigate different _kernels_. A mismatched _kernel_ may cause bad results in the neural network.
 
-As a counter-example, look at the Linear \textit{kernel}. It was applied to the Sigmoid and Sine distributions shown in Fig. \ref{fig:ELM2} (a) and Fig. \ref{fig:ELM2} (b), respectively.
+As a counter-example, look at the Linear _kernel_. It was applied to the Sigmoid and Sine distributions shown in Fig. \ref{fig:ELM2} (a) and Fig. \ref{fig:ELM2} (b), respectively.
 
 
 ![Logo do GitHub](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)
@@ -98,13 +98,6 @@ O método k-fold é uma forma específica de validação cruzada onde o conjunto
 - **Repetição do processo**: esse processo é repetido k vezes, cada vez com uma dobra diferente atuando como conjunto de teste.
 
 - **Média e desvio padrão dos resultados**: as métricas de desempenho são calculadas para cada uma das k execuções e, em seguida, a média dessas métricas é computada para obter uma estimativa final do desempenho do modelo.
-![Logo do GitHub](https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_1.png)
-![Logo do GitHub](https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_2.png)
-
-<figure>
-  <img src="https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_2.png" alt="Exemplo de Uso">
-  <figcaption>Figura 2: Exemplo de Uso</figcaption>
-</figure>
 
 ### Siga as instruções:
 No terminal, instale o _scikit-learn_.
@@ -121,30 +114,22 @@ python svmKfold.py
 ```
 ## Parâmetros do Classificador SVM
 
-Um dos grandes desafios, em máquinas de aprendizado estatístico, diz respeito a encontrar um \textit{kernel} de modo que otimize a fronteira de decisão entre as classes de uma dada aplicação. Em redes neurais ELM, um \textit{kernel} Linear, por exemplo, é capaz de resolver um problema linearmente separável, como o visto na \ref{fig:ELM1} (a). Seguindo o mesmo raciocínio, \textit{kernels} Sigmóide, RBF  e Senoide são capazes de resolver problemas separáveis por função Sigmoidal, Radial e Senoidal, vistos na Fig. \ref{fig:ELM1} (b), na Fig. \ref{fig:ELM1} (c) e na  Fig. \ref{fig:ELM1} (d), respectivamente. 
+Um dos grandes desafios, em máquinas de aprendizado estatístico, diz respeito a encontrar um _kernel_ de modo que otimize a fronteira de decisão entre as classes de uma dada aplicação. Em SVM, um _kernel_ Linear, por exemplo, é capaz de resolver um problema linearmente separável, como o visto na Fig. 3 (a). Seguindo o mesmo raciocínio, _kernels_ Sigmóide, RBF  e Senoide são capazes de resolver problemas separáveis por função Sigmoidal, Radial e Senoidal, vistos na  Fig. 3 (b), na  Fig. 3 (c) e na Fig. 3 (d), respectivamente. 
 
-Então uma boa capacidade de generalização da rede neural pode depender de uma escolha ajustada do \textit{kernel}. O melhor \textit{kernel} pode estar subordinado ao problema a ser resolvido. Como efeito colateral, a investigação de diferentes \textit{kernels} é geralmente um processo custoso envolvendo validação cruzada combinada com diferentes condições iniciais aleatórias. A investigação de distintos \textit{kernels}, no entanto, pode ser necessária, caso contrário a rede neural composta, por um \textit{kernel} desajustado, por gerar resultados não satisfatórios.
-Como contra-exemplo, observe o emprego do \textit{kernel} Linear aplicado a distribuições Sigmóide e Senoide apresentados na Fig. \ref{fig:ELM2} (a) e na Fig. \ref{fig:ELM2} (b), respectivamente. As precisões das classificações expostas na Fig. \ref{fig:ELM2} (a) e na Fig. \ref{fig:ELM2} (b) são de 78,71\% e 73,00\%, respectivamente. Visualmente, é possível observar que o \textit{kernel} Linear não mapeia as fronteiras de decisões das distribuições Sigmóide e Senoide de forma adequada.
+Então uma boa capacidade de generalização da _machine learning_ pode depender de uma escolha ajustada do _kernel_. O melhor _kernel_ pode estar subordinado ao problema a ser resolvido. Como efeito colateral, a investigação de diferentes _kernels_ é geralmente um processo custoso envolvendo validação cruzada combinada com diferentes condições iniciais aleatórias. A investigação de distintos _kernels_, no entanto, pode ser necessária, caso contrário a rede neural composta, por um _kernel_ desajustado, por gerar resultados não satisfatórios.
+Como contra-exemplo, observe o emprego do _kernel_ Linear aplicado a distribuições Sigmóide e Senoide apresentados na Fig. \ref{fig:ELM2} (a) e na Fig. \ref{fig:ELM2} (b), respectivamente. As precisões das classificações expostas na Fig. \ref{fig:ELM2} (a) e na Fig. \ref{fig:ELM2} (b) são de 78,71\% e 73,00\%, respectivamente. Visualmente, é possível observar que o _kernel_ Linear não mapeia as fronteiras de decisões das distribuições Sigmóide e Senoide de forma adequada.
 
-Uma boa capacidade de generalização desses \textit{kernels} também depende de uma escolha ajustada de parâmetros $(C, \gamma)$. O parâmetro de custo $C$ se refere a um ponto de equilíbrio razoável entre a largura da margem do hiperplano e a minimização do erro de classificação em relação ao conjunto de treinamento. O parâmetro do \textit{kernel} $\gamma$ controla o limite de decisão em função das classes \cite{Pinheiro}. Não existe um método universal no sentido de escolher os parâmetros $(C, \gamma)$. No presente trabalho, os parâmetros $C$ e $\gamma$ variam exponencialmente em sequências crescentes, matematicamente de acordo com a função $10^n$, onde $n=\left \{-3, -2, -1, 0, 1, 2, 3 \right \}$. A hipótese é verificar se esses parâmetros distintos dos padrões; $(C, \gamma) = (2^{1}, 2^{1})$, são capazes de gerar melhores acurácias.  
+Uma boa capacidade de generalização desses _kernels_ também depende de uma escolha ajustada de parâmetros $(C, \gamma)$. O parâmetro de custo $C$ se refere a um ponto de equilíbrio razoável entre a largura da margem do hiperplano e a minimização do erro de classificação em relação ao conjunto de treinamento. O parâmetro do _kernel_ $\gamma$ controla o limite de decisão em função das classes \cite{Pinheiro}. Não existe um método universal no sentido de escolher os parâmetros $(C, \gamma)$. No presente trabalho, os parâmetros $C$ e $\gamma$ variam exponencialmente em sequências crescentes, matematicamente de acordo com a função $10^n$, onde $n=\left \{-3, -2, -1, 0, 1, 2, 3 \right \}$. A hipótese é verificar se esses parâmetros distintos dos padrões; $(C, \gamma) = (2^{1}, 2^{1})$, são capazes de gerar melhores acurácias.  
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.9\textwidth]{Pictures/cap_14/ELM_1.png}
-	\caption{Atuações bem-sucedidas dos \textit{kernels} compatíveis com os conjuntos de dados.}
-	\label{fig:ELM1}
-\end{figure}
+<figure>
+  <img src="https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_1.png" alt="Atuações bem-sucedidas dos _kernels_ compatíveis com os conjuntos de dados.">
+  <figcaption>Figura 3: Atuações bem-sucedidas dos _kernels_ compatíveis com os conjuntos de dados.</figcaption>
+</figure>
 
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.9\textwidth]{Pictures/cap_14/ELM_2.png}
-	\caption{Atuações malsucedidas do \textit{kernel} Linear em conjuntos de dados não-linearmente separáveis.}
-	\label{fig:ELM2}
-\end{figure}
-
-\clearpage
-
+<figure>
+  <img src="https://github.com/DejavuForensics/SVM/blob/main/PT-BR/SVM_2.png" alt="Atuações malsucedidas do _kernel_ Linear em conjuntos de dados não-linearmente separáveis.">
+  <figcaption>Figura 4: Atuações malsucedidas do _kernel_ Linear em conjuntos de dados não-linearmente separáveis.</figcaption>
+</figure>
 
 ### Siga as instruções:
 
