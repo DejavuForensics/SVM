@@ -11,6 +11,9 @@ In the terminal, install _libsvm_.
 ```
 pip install libsvm
 ```
+Parameters for using the SVM to recognise patterns:
+
+-	-dataset: specifies the database path. By default, the _heart_scale_ and _bodyfat_scale_ databases are used for classification and regression, respectively.
 
 ```
 python svm.py
@@ -62,13 +65,13 @@ No terminal, instale o _libsvm_.
 pip install libsvm
 ```
 
+Parâmetros de uso do SVM visando reconhecimento de padrão:
+
+-	-dataset: especifica o caminho da base de dados. Por padrão, as bases de dados _heart_scale_ e _bodyfat_scale_ são empregadas na classificação e regressão, respectivamente.
+
 ```
 python svm.py
 ```
-
-Parâmetros de uso do SVM visando reconhecimento de padrão:
-
--	-\textit{dataset}: especifica o caminho da base de dados. Por padrão, as bases de dados _heart_scale_ e _bodyfat_scale_ são empregadas na classificação e regressão, respectivamente.
 
 ## SVM - K-fold
 A validação cruzada é uma técnica estatística usada para avaliar o desempenho de um modelo de aprendizado de máquina. Ela divide o conjunto de dados em várias partes, ou "dobras", para que o modelo possa ser treinado e testado múltiplas vezes em diferentes subconjuntos dos dados. O objetivo é garantir que o modelo generalize bem para dados novos e não vistos,
