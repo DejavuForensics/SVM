@@ -55,7 +55,7 @@ As a counter-example, look at the use of the Linear kernel. It was applied to th
 The kernels generalize well. But, this depends on choosing good parameters (C, gamma). The cost parameter C balances margin width and reduces classification error. It balances these factors relative to the training set. The kernel gamma parameter controls the decision limit depending on the classes. There is no universal method for choosing the parameters (C, gamma). C and gamma increase fast. They follow the function 10 to the power of n. Here, n ranges from -3 to 3. The hypothesis is to check if these parameters differ from the standards. The standards are (C, gamma) = ( 10<sup>0</sup>, 10<sup>0</sup>). The parameters can generate better accuracies.
 
 <figure>
-  <img src="https://github.com/DejavuForensics/SVM/blob/main/EN-US/SVM_1.png" alt="Successful performances of the _kernels_ compatible with the datasets."  style="width:60%; height:50%;">
+  <img src="https://github.com/DejavuForensics/SVM/blob/main/EN-US/SVM_1.png" alt="Successful performances of the _kernels_ compatible with the datasets."  style="width:75%; height:50%;">
   <figcaption>Figure 1: Successful performances of the _kernels_ compatible with the datasets.</figcaption>
 </figure>
 
