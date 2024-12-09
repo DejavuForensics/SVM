@@ -43,8 +43,8 @@ class svmKfold():
 		# Calcular a média e o desvio padrão da acurácia do teste
 		mean_accuracy_test = np.mean(accuracies_test)
 		std_accuracy_test = np.std(accuracies_test)	
-		print(f"Train Mean Accuracy: {mean_accuracy_train:.2f}% ± {std_accuracy_train:.2f}%")
-		print(f"Test Mean Accuracy: {mean_accuracy_test:.2f}% ± {std_accuracy_test:.2f}%")
+		print(f"Acurácia Média de Treino: {mean_accuracy_train:.2f}% ± {std_accuracy_train:.2f}%")
+		print(f"Acurácia Média de Teste: {mean_accuracy_test:.2f}% ± {std_accuracy_test:.2f}%")
 #========================================================================
 def setOpts(argv):                         
 	parser = argparse.ArgumentParser()
