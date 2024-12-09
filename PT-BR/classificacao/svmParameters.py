@@ -69,17 +69,17 @@ class svmParameters():
 						max_mean_accuracy_test = mean_accuracy_test
 						max_std_accuracy_test = std_accuracy_test
 
-		print(f"Worst Train Mean Accuracy: {min_mean_accuracy_train:.2f}% ± {min_std_accuracy_train:.2f}%")
-		print(f"Worst Test Mean Accuracy: {min_mean_accuracy_test:.2f}% ± {min_std_accuracy_test:.2f}%")
-		print('Worst kernel: ' + kernel_str(min_kernel))
-		print(f'Worst cost conf.: {min_cost:.3f}')
-		print(f'Worst gamma conf.: {min_gamma:.3f}')
+		print(f"Pior Acurácia Média de Treino: {min_mean_accuracy_train:.2f}% ± {min_std_accuracy_train:.2f}%")
+		print(f"Pior Acurácia Média de Teste: {min_mean_accuracy_test:.2f}% ± {min_std_accuracy_test:.2f}%")
+		print('Pior kernel: ' + kernel_str(min_kernel))
+		print(f'Pior conf. de cost: {min_cost:.3f}')
+		print(f'Pior conf. de gamma: {min_gamma:.3f}')
 		print(f'...................................')
-		print(f"Best Train Mean Accuracy: {max_mean_accuracy_train:.2f}% ± {max_std_accuracy_train:.2f}%")
-		print(f"Best Test Mean Accuracy: {max_mean_accuracy_test:.2f}% ± {max_std_accuracy_test:.2f}%")
-		print('Best Kernel: ' + kernel_str(max_kernel))
-		print(f'Best Cost conf.: {max_cost:.3f}')
-		print(f'Best Gamma conf.: {max_gamma:.3f}')
+		print(f"Melhor Acurácia Média de Treino: {max_mean_accuracy_train:.2f}% ± {max_std_accuracy_train:.2f}%")
+		print(f"Melhor Acurácia Média de Teste: {max_mean_accuracy_test:.2f}% ± {max_std_accuracy_test:.2f}%")
+		print('Melhor Kernel: ' + kernel_str(max_kernel))
+		print(f'Melhor conf. de Cost: {max_cost:.3f}')
+		print(f'Melhor conf. de Gamma: {max_gamma:.3f}')
 
 #========================================================================	
 def kernel_str(t):
