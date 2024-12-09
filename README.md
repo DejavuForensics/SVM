@@ -18,6 +18,12 @@ Parameters for using the SVM to recognise patterns or prediction:
 ```
 python svm.py
 ```
+
+If problems arise, they are likely due to version mismatches in NumPy, SciPy, and libsvm. In this case, we recommend downgrading SciPy to a previous version.
+```
+pip install "scipy<1.12"
+```
+
 ## SVM: K-fold
 Cross-validation is a statistical technique. Researchers use it to assess the performance of a machine learning model. It divides the data set into parts, or ‘folds’. You can train and test the model many times on different data subsets. The aim is to ensure that the model generalises well to new and unseen data. The k-fold method is a type of cross-validation. In it, the data set is randomly split into k equal subsets (or folds). The k-fold involves the following steps:
 
