@@ -69,12 +69,13 @@ class svmParameters():
 						max_mean_accuracy_test = mean_accuracy_test
 						max_std_accuracy_test = std_accuracy_test
 
+		print(f'...........................................')
 		print(f"Worst Train Mean Accuracy: {min_mean_accuracy_train:.2f}% ± {min_std_accuracy_train:.2f}%")
 		print(f"Worst Test Mean Accuracy: {min_mean_accuracy_test:.2f}% ± {min_std_accuracy_test:.2f}%")
 		print('Worst kernel: ' + kernel_str(min_kernel))
 		print(f'Worst cost conf.: {min_cost:.3f}')
 		print(f'Worst gamma conf.: {min_gamma:.3f}')
-		print(f'...................................')
+		print(f'...........................................')
 		print(f"Best Train Mean Accuracy: {max_mean_accuracy_train:.2f}% ± {max_std_accuracy_train:.2f}%")
 		print(f"Best Test Mean Accuracy: {max_mean_accuracy_test:.2f}% ± {max_std_accuracy_test:.2f}%")
 		print('Best Kernel: ' + kernel_str(max_kernel))
