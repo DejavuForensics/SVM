@@ -100,6 +100,10 @@ Parâmetros de uso do SVM:
 ```
 python svm.py
 ```
+Se surgirem problemas, é provável que sejam causados por incompatibilidades entre as versões das bibliotecas _NumPy_, _SciPy_ e _libsvm_. Nesse caso, recomenda-se realizar a desatualização (_downgrade_) do _SciPy_ para uma versão anterior.
+```
+pip install "scipy<1.12"
+```
 
 ## SVM - K-fold
 A validação cruzada é uma técnica estatística usada para avaliar o desempenho de um modelo de aprendizado de máquina. Ela divide o conjunto de dados em várias partes, ou "dobras", para que o modelo possa ser treinado e testado múltiplas vezes em diferentes subconjuntos dos dados. O objetivo é garantir que o modelo generalize bem para dados novos e não vistos,
