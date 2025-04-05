@@ -7,9 +7,9 @@ Classical neural networks aim to find a hyperplane. The hyperplane separates the
 There can be several hyperplanes separating the data correctly. SVM is a classifier that finds a better hyperplane than others.
 
 ### Follow the instructions:
-In the terminal, install _libsvm_.
+In the terminal, install requirements.
 ```
-pip install libsvm
+pip install -r requirements.txt --break-system-packages
 ```
 Parameters for using the SVM to recognise patterns or prediction:
 
@@ -19,10 +19,6 @@ Parameters for using the SVM to recognise patterns or prediction:
 python svm.py
 ```
 
-If problems arise, they are likely due to version mismatches in NumPy, SciPy, and libsvm. In this case, we recommend downgrading SciPy to a previous version.
-```
-pip install "scipy<1.12"
-```
 
 ## SVM: K-fold
 Cross-validation is a statistical technique. Researchers use it to assess the performance of a machine learning model. It divides the data set into parts, or ‘folds’. You can train and test the model many times on different data subsets. The aim is to ensure that the model generalises well to new and unseen data. The k-fold method is a type of cross-validation. In it, the data set is randomly split into k equal subsets (or folds). The k-fold involves the following steps:
@@ -36,11 +32,6 @@ Cross-validation is a statistical technique. Researchers use it to assess the pe
 - **Average and standard deviation of results**: performance metrics are calculated for each of the k runs. For each run, we calculate the average and standard deviation. We then average these metrics. This gives the model's final performance.
 
 ### Follow the instructions:
-
-In the terminal, install _scikit-learn_.
-```
-pip install scikit-learn
-```
 
 Parameters for using the SVM with _k-fold_ cross-validation:
 
