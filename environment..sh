@@ -8,7 +8,3 @@ fi
 apt install python3.11-venv
 python -m venv venv
 source venv/bin/activate
-
-pip install libsvm
-pip install brisque
-pip install scikit-learn
