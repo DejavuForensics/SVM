@@ -7,10 +7,17 @@ Classical neural networks aim to find a hyperplane. The hyperplane separates the
 There can be several hyperplanes separating the data correctly. SVM is a classifier that finds a better hyperplane than others.
 
 ### Follow the instructions:
+In the terminal, install the virtual environment.
+```
+chmod +x environment.sh
+.\environment.sh
+```
+
 In the terminal, install requirements.
 ```
-.\requirements.sh
+pip install -r requirements.txt
 ```
+
 Parameters for using the SVM to recognise patterns or prediction:
 
 -	-dataset: specifies the database path. By default, the _heart_scale_ and _bodyfat_scale_ databases are used for classification and regression, respectively.
