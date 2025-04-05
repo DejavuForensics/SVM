@@ -9,8 +9,8 @@ There can be several hyperplanes separating the data correctly. SVM is a classif
 ### Follow the instructions:
 In the terminal, install the virtual environment.
 ```
-chmod +x environment.sh
-.\environment.sh
+python -m venv venv
+source venv/bin/activate
 ```
 
 In the terminal, install requirements.
