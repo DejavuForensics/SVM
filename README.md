@@ -9,7 +9,7 @@ There can be several hyperplanes separating the data correctly. SVM is a classif
 ### Follow the instructions:
 In the terminal, install requirements.
 ```
-pip install -r requirements.txt --break-system-packages
+.\equirements.sh
 ```
 Parameters for using the SVM to recognise patterns or prediction:
 
