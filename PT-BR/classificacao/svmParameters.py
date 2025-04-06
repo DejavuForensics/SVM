@@ -99,6 +99,7 @@ def svmKfold(y, x, t, cost, gamma):
 	# Configurar o k-Fold
 	k = 10
 	# O parâmetro shuffle server para randomizar (embaralhar) as amostras
+	np.random.seed(1)
 	kf = KFold(n_splits=k, shuffle=True)
 	# Realizar a validação cruzada por k-Fold 
 	accuracies_train = []
