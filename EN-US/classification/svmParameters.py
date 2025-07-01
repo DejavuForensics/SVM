@@ -17,14 +17,10 @@ class svmParameters():
 		y, x = svm_read_problem(dataset)
 		
 		cost_vector = []
-		cost_vector.append(10 ** -3)
-		cost_vector.append(10 ** -2)
-		cost_vector.append(10 ** -1)
 		cost_vector.append(10 ** 0)
-		cost_vector.append(10 ** 1)
-		cost_vector.append(10 ** 2)
-		cost_vector.append(10 ** 3)	
-		gamma_vector = cost_vector;
+		cost_vector.append(10 ** 3)   
+		gamma_vector = []
+		gamma_vector.append(10 ** 0)
 
 		min_acc = 101
 		max_acc = -1
