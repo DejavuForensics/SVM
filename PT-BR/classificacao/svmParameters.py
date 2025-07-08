@@ -10,6 +10,7 @@ from sklearn.model_selection import KFold
 import numpy as np
 import argparse
 import sys,string
+from time import process_time
 #========================================================================
 class svmParameters():
 	def main(self, dataset):
@@ -44,7 +45,7 @@ class svmParameters():
 		for t in range(4):
 			for c in range(len(cost_vector)):
 				for g in range(len(gamma_vector)):
-					mean_accuracy_train, std_accuracy_train, mean_accuracy_test, std_accuracy_test = \
+					mean_accuracy_train, std_accuracy_train, mean_accuracy_test, std_accuracy_test, mean_train_time, std_train_time, mean_test_time, std_test_time = \
 					svmKfold(y, x, t, cost_vector[c], gamma_vector[g])
 					if(mean_accuracy_test<min_acc):
 						min_acc = mean_accuracy_test
@@ -55,6 +56,10 @@ class svmParameters():
 						min_std_accuracy_train =std_accuracy_train
 						min_mean_accuracy_test = mean_accuracy_test
 						min_std_accuracy_test = std_accuracy_test
+						min_mean_train_time = mean_train_time
+						min_std_train_time = std_train_time
+						min_mean_test_time = mean_test_time
+						min_std_test_time = std_test_time
 					if(mean_accuracy_test>max_acc):
 						max_acc = mean_accuracy_test
 						max_kernel = t
@@ -64,6 +69,10 @@ class svmParameters():
 						max_std_accuracy_train = std_accuracy_train 
 						max_mean_accuracy_test = mean_accuracy_test
 						max_std_accuracy_test = std_accuracy_test
+						max_mean_train_time = mean_train_time
+						max_std_train_time = std_train_time
+						max_mean_test_time = mean_test_time
+						max_std_test_time = std_test_time
 
 		print(f'...........................................')
 		print(f"Pior Acurácia Média de Treino: {min_mean_accuracy_train:.2f}% ± {min_std_accuracy_train:.2f}%")
@@ -71,12 +80,16 @@ class svmParameters():
 		print('Pior kernel: ' + kernel_str(min_kernel))
 		print(f'Pior conf. de cost: {min_cost:.3f}')
 		print(f'Pior conf. de gamma: {min_gamma:.3f}')
+		print(f"Pior tempo médio de treino: {min_mean_train_time}% ± {min_std_train_time}")
+		print(f"Pior tempo médio de teste: {min_mean_test_time} ± {min_std_test_time}")
 		print(f'...........................................')
 		print(f"Melhor Acurácia Média de Treino: {max_mean_accuracy_train:.2f}% ± {max_std_accuracy_train:.2f}%")
 		print(f"Melhor Acurácia Média de Teste: {max_mean_accuracy_test:.2f}% ± {max_std_accuracy_test:.2f}%")
 		print('Melhor Kernel: ' + kernel_str(max_kernel))
 		print(f'Melhor conf. de Cost: {max_cost:.3f}')
 		print(f'Melhor conf. de Gamma: {max_gamma:.3f}')
+		print(f"Melhor tempo médio de treino: {max_mean_train_time}% ± {max_std_train_time}")
+		print(f"Melhor tempo médio de teste: {max_mean_test_time} ± {max_std_test_time}")
 
 #========================================================================	
 def kernel_str(t):
@@ -100,19 +113,27 @@ def svmKfold(y, x, t, cost, gamma):
 	# Realizar a validação cruzada por k-Fold 
 	accuracies_train = []
 	accuracies_test = []
+	processing_time_train = []
+	processing_time_test = []
 	# Repetição do processo por k vezes
 	for train_index, test_index in kf.split(x):
 		#Divisão dos dados entre treino e teste
 		x_train, x_test = [x[i] for i in train_index], [x[i] for i in test_index]
 		y_train, y_test = [y[i] for i in train_index], [y[i] for i in test_index]
 		# Treinamento do SVM
+		start_time_train = process_time()
 		m = svm_train(y_train, x_train, '-t ' + str(t) + ' -c ' + str(cost) + ' -g ' + str(gamma))
+		end_time_train = process_time()
 		#Acurácia do treino
 		p_label, p_acc_train, p_val = svm_predict(y_train, x_train, m)
 		# Acurácia do teste
+		start_time_test = process_time()
 		p_label, p_acc_test, p_val = svm_predict(y_test, x_test, m)   
+		end_time_test = process_time()
 		accuracies_train.append(p_acc_train[0])
 		accuracies_test.append(p_acc_test[0])
+		processing_time_train.append(end_time_train - start_time_train)
+		processing_time_test.append(end_time_test-start_time_test)
 
 	# Calcular a média e o desvio padrão da acurácia do treino
 	mean_accuracy_train = np.mean(accuracies_train)
@@ -121,8 +142,16 @@ def svmKfold(y, x, t, cost, gamma):
 	# Calcular a média e o desvio padrão da acurácia do teste
 	mean_accuracy_test = np.mean(accuracies_test)
 	std_accuracy_test = np.std(accuracies_test)
+
+	# mean train time
+	mean_train_time = np.mean(processing_time_train)
+	std_train_time = np.std(processing_time_train)
+	# mean test time
+	
+	mean_test_time = np.mean(processing_time_test)
+	std_test_time = np.std(processing_time_test)
 		
-	return mean_accuracy_train, std_accuracy_train, mean_accuracy_test, std_accuracy_test
+	return mean_accuracy_train, std_accuracy_train, mean_accuracy_test, std_accuracy_test, mean_train_time, std_train_time, mean_test_time, std_test_time
 #========================================================================
 def setOpts(argv):                         
 	parser = argparse.ArgumentParser()
