@@ -22,6 +22,8 @@ import seaborn as sns
 
 #========================================================================
 # FUNÇÕES E CLASSES PARA O EXPERIMENTO SVM
+import sys,string
+from time import process_time
 #========================================================================
 
 def kernel_str(t):
