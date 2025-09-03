@@ -13,6 +13,7 @@ import numpy as np
 import argparse
 import sys
 import string
+from time import process_time
 
 # Dependências para a geração do relatório HTML e gráficos
 from jinja2 import Template
@@ -106,24 +107,37 @@ def svmKfold(y, x, t, cost, gamma, threshold):
     np.random.seed(1)
     kf = KFold(n_splits=k, shuffle=True)
     
-    accuracies_train, accuracies_test = [], []
+    accuracies_train, accuracies_test, timing_train, timing_test = [], [], [], []
     confusion_matrices = []
     unique_labels = sorted(np.unique(y))
 
+    kcount = 0
     for train_index, test_index in kf.split(x):
+        kcount += 1
         x_train, x_test = [x[i] for i in train_index], [x[i] for i in test_index]
         y_train, y_test = [y[i] for i in train_index], [y[i] for i in test_index]
 
-        y_train_pruned, x_train_pruned = pruningDataset(y_train, x_train, threshold, save_files=False)
+        #y_train_pruned, x_train_pruned = pruningDataset(y_train, x_train, threshold, save_files=False)
+        y_train_pruned = y_train
+        x_train_pruned = x_train
         
         param_str = f'-t {t} -c {cost} -g {gamma} -q'
+        print(f'\n{str(kcount)}ª execução das {str(k)} previstas.')
+        start_time_train = process_time()
         m = svm_train(y_train_pruned, x_train_pruned, param_str)
-        
+        end_time_train = process_time()
+        print('Acurácia no treino.')
         _, p_acc_train, _ = svm_predict(y_train_pruned, x_train_pruned, m)
+        print('Acurácia no teste.')
+        start_time_test = process_time()
         p_label_test, p_acc_test, _ = svm_predict(y_test, x_test, m)
-        
+        end_time_test = process_time()
+         
         accuracies_train.append(p_acc_train[0])
         accuracies_test.append(p_acc_test[0])
+        timing_train.append(end_time_train - start_time_train)
+        timing_test.append(end_time_test - start_time_test)
+        
         
         cm = confusion_matrix(y_test, p_label_test, labels=unique_labels)
         confusion_matrices.append(cm)
@@ -132,13 +146,16 @@ def svmKfold(y, x, t, cost, gamma, threshold):
     
     return np.mean(accuracies_train), np.std(accuracies_train), \
            np.mean(accuracies_test), np.std(accuracies_test), \
+           np.mean(timing_train), np.std(timing_train), \
+           np.mean(timing_test), np.std(timing_test), \
            avg_cm
 
 class svmParameters():
     def main(self, dataset, threshold):
         """Método principal que executa a busca de parâmetros e retorna os resultados."""
         y, x = svm_read_problem(dataset)
-        y, x = pruningDataset(y, x, threshold, save_files=True)
+        if threshold:
+        	y, x = pruningDataset(y, x, threshold, save_files=True)
 
         cost_vector = [10**0, 10**3]
         gamma_vector = [10**0]
@@ -150,31 +167,47 @@ class svmParameters():
         min_mean_accuracy_train, min_std_accuracy_train, min_mean_accuracy_test, min_std_accuracy_test = 101, 101, 101, 101
         max_mean_accuracy_train, max_std_accuracy_train, max_mean_accuracy_test, max_std_accuracy_test = -1, -1, -1, -1
         
+        min_mean_time_train, min_std_time_train, min_mean_time_test, min_std_time_test = 101, 101, 101, 101
+        max_mean_time_train, max_std_time_train, max_mean_time_test, max_std_time_test = -1, -1, -1, -1
         kernel_results = {}
 
         for t in range(4):
             kernel_max_acc, kernel_min_acc = -1, 101
             kernel_max_data, kernel_min_data = {}, {}
             
-            print(f'\n=== Testando Kernel: {kernel_str(t)} ===')
+            
             for c in cost_vector:
                 for g in gamma_vector:
-                    mean_train, std_train, mean_test, std_test, avg_cm = \
+                    if (t != 0):
+                    	print(f'\n========== Experimentando Kernel: {kernel_str(t)}, peso de custo: ', str(c),' peso de curvatura: ', str(g), ' ==========')
+                    else:
+                    	print(f'\n========== Experimentando Kernel: {kernel_str(t)}, peso de custo: ', str(c), ' ==========')	
+                    mean_train, std_train, mean_test, std_test, mean_time_train, std_time_train, mean_time_test, std_time_test, avg_cm = \
                         svmKfold(y, x, t, c, g, threshold)
                     
                     if mean_test > kernel_max_acc:
                         kernel_max_acc = mean_test
-                        kernel_max_data = {"accuracy_test": mean_test, "std_test": std_test, "confusion_matrix": avg_cm}
+                        kernel_max_data = {"accuracy_train": mean_train, "std_train": std_train,\
+                                           "accuracy_test": mean_test, "std_test": std_test,\
+                                           "time_train": mean_time_train, "std_train": std_time_train,\
+                                           "time_test": mean_time_test, "std_test": std_time_test,\
+                                           "confusion_matrix": avg_cm}
                     
                     if mean_test < kernel_min_acc:
                         kernel_min_acc = mean_test
-                        kernel_min_data = {"accuracy_test": mean_test, "std_test": std_test, "confusion_matrix": avg_cm}
-
+                        kernel_min_data = {"accuracy_train": mean_train, "std_train": std_train,\
+                                           "accuracy_test": mean_test, "std_test": std_test,\
+                                           "time_train": mean_time_train, "std_train": std_time_train,\
+                                           "time_test": mean_time_test, "std_test": std_time_test,\
+                                           "confusion_matrix": avg_cm}
+                                           
                     if mean_test > max_acc:
                         max_acc = mean_test
                         max_kernel, max_cost, max_gamma = t, c, g
                         max_mean_accuracy_train, max_std_accuracy_train = mean_train, std_train
                         max_mean_accuracy_test, max_std_accuracy_test = mean_test, std_test
+                        max_mean_time_train, max_std_time_train = mean_time_train, std_time_train
+                        max_mean_time_test, max_std_time_test = mean_time_test, std_time_test
                         max_cm = avg_cm
 
                     if mean_test < min_acc:
@@ -182,6 +215,8 @@ class svmParameters():
                         min_kernel, min_cost, min_gamma = t, c, g
                         min_mean_accuracy_train, min_std_accuracy_train = mean_train, std_train
                         min_mean_accuracy_test, min_std_accuracy_test = mean_test, std_test
+                        min_mean_time_train, min_std_time_train = mean_time_train, std_time_train
+                        min_mean_time_test, min_std_time_test = mean_time_test, std_time_test
                         min_cm = avg_cm
             
             kernel_results[t] = {"max": kernel_max_data, "min": kernel_min_data}
@@ -189,6 +224,7 @@ class svmParameters():
         global_results = {
             "max": {"accuracy_train": max_mean_accuracy_train, "std_train": max_std_accuracy_train,
                     "accuracy_test": max_mean_accuracy_test, "std_test": max_std_accuracy_test,
+                    
                     "kernel_id": max_kernel, "cost": max_cost, "gamma": max_gamma, "confusion_matrix": max_cm},
             "min": {"accuracy_train": min_mean_accuracy_train, "std_train": min_std_accuracy_train,
                     "accuracy_test": min_mean_accuracy_test, "std_test": min_std_accuracy_test,
@@ -316,11 +352,11 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
 
 def setOpts(argv):
     """Configura e parseia os argumentos da linha de comando."""
-    parser = argparse.ArgumentParser(description='Testador de Parâmetros SVM com Geração de Relatório HTML')
+    parser = argparse.ArgumentParser(description='Testador de Parâmetros SVM com Geração de Relatório HTML.')
     parser.add_argument('-dataset', dest='dataset', action='store',
-                        default='heart_scale', help='Nome do arquivo do conjunto de dados (formato LIBSVM)')
-    parser.add_argument('-threshold', dest='threshold', action='store',
-                        type=float, default=0.1, help='Limiar de correlação para seleção de características')
+                        default='heart_scale', help='Nome do arquivo do conjunto de dados (formato LIBSVM).')           
+    parser.add_argument('-threshold', dest='threshold', action='store', default=False,
+        		help="Limiar de correlação para seleção de características.")
     
     args = parser.parse_args(argv)
     return args.dataset, args.threshold
