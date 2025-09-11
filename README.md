@@ -95,9 +95,9 @@ https://doi.org/10.1016/j.cose.2025.104465
 
 ## Antivirus for IoT _malware_ from ARM architectures
 
-python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset [Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv](https://github.com/DejavuForensics/SVM/blob/main/Antiviruses/Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv) 
+python [converter_libsvm.py](https://github.com/DejavuForensics/SVM/blob/main/converter_libsvm.py)  [Antivirus_Dataset_IoT_ARM_mELM_format.csv](https://github.com/DejavuForensics/SVM/blob/main/Antiviruses/Antivirus_Dataset_IoT_ARM_mELM_format.csv) Antivirus_Dataset_IoT_SPARC_SVM_format.libsvm
 
-python [melm.py](https://github.com/DejavuForensics/mELM/blob/main/melm.py) -tall [Antivirus_Dataset_IoT_SPARC_mELM_format.csv](https://github.com/DejavuForensics/IoT_ARM/blob/main/Antivirus_Dataset_IoT_ARM_mELM_format.csv) -kfold 10 -ty 1 -virusNorm -nh 500 -af dilation -v
+python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset Antivirus_Dataset_IoT_SPARC_SVM_format.libsvm
 
 ```
 Tavares-Silva, S.H.M., Lopes-Lima, S.M., Paranhos-Pinheiro, R. et al.
@@ -108,10 +108,7 @@ https://doi.org/10.1007/s11227-024-06506-x
 
 ## Antivirus for IoT _malware_ from SPARC architectures
 
-python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset [Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv](https://github.com/DejavuForensics/SVM/blob/main/Antiviruses/Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv) 
-
-python [melm.py](https://github.com/DejavuForensics/mELM/blob/main/melm.py) -tall [Antivirus_Dataset_IoT_SPARC_mELM_format.csv](https://github.com/DejavuForensics/IoT_SPARC/blob/main/Antivirus_Dataset_IoT_SPARC_mELM_format.csv) 
--kfold 10 -virusNorm -ty 1 -nh 500 -af dilation -v
+python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset Antivirus_Dataset_IoT_SPARC_SVM_format.libsvm
 
 ```
 Pinheiro Henriques de Araújo, I., Mariano Santiago de Abreu, L., Henrique Mendes Tavares Silva, S. et al.
@@ -122,10 +119,8 @@ https://doi.org/10.1007/s11416-024-00526-0
 
 ## Antivirus for Citadel _malware_
 
-python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset [Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv](https://github.com/DejavuForensics/SVM/blob/main/Antiviruses/Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv) 
+python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset Antivirus_Dataset_PE32_Citadel_SVM_format.libsvm
 
-python [melm.py](https://github.com/DejavuForensics/mELM/blob/main/melm.py) -tall [Antivirus_Dataset_PE32_Citadel_mELM_format.csv](https://github.com/DejavuForensics/Citadel/blob/main/Antivirus_Dataset_PE32_Citadel_mELM_format.csv) 
--kfold 10 -virusNorm -ty 1 -nh 500 -af dilation -v
 
 ```
 Carlos Henrique Macedo dos Santos, Sidney Marlon Lopes de Lima,
@@ -137,10 +132,7 @@ https://doi.org/10.1016/j.jocs.2024.102389.
 ## Antivirus for Java malicious apps
 The database is compressed due to the individual file size delimited by github. Download the compressed file (.zip) to your computer and decompress it before running the extreme neural networks.
 
-python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset [Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv](https://github.com/DejavuForensics/SVM/blob/main/Antiviruses/Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv) 
-
-python [melm.py](https://github.com/DejavuForensics/mELM/blob/main/melm.py) -tall [Antivirus_Dataset_Jar_mELM_format.csv](https://github.com/DejavuForensics/REJAFADA/blob/master/Antivirus_Dataset_Jar_mELM_format.zip) 
--kfold 10 -virusNorm -ty 1 -nh 500 -af dilation -v
+python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset Antivirus_Dataset_Jar_SVM_format.libsvm
 
 ```
 Pinheiro, R.P., Lima, S.M.L., Souza, D.M. et al. 
@@ -151,10 +143,7 @@ https://doi.org/10.1038/s41598-022-05921-5
 
 ## Antivirus for PHP malicious apps
 
-python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset [Antivirus_Dataset_PHP_batch_1_SVM_format.libsvm](https://github.com/DejavuForensics/SVM/blob/main/Antiviruses/Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv) 
-
-python [melm.py](https://github.com/DejavuForensics/mELM/blob/main/melm.py) -tall [Antivirus_Dataset_PHP_batch_1_mELM_format](https://github.com/DejavuForensics/PAEMAL/blob/master/Antivirus_Dataset_PHP_batch_1_mELM_format.csv) 
--kfold 10 -virusNorm -ty 1 -nh 500 -af dilation -v
+python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset [Antivirus_Dataset_PHP_batch_1_SVM_format.libsvm]
 
 ```
 Lima, S.M.L., Silva, S.H.M.T., Pinheiro, R.P. et al.
