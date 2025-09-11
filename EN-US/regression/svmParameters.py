@@ -16,11 +16,8 @@ class svmParameters():
 		# Load and Prepare the Dataset
 		y, x = svm_read_problem(dataset)
 
-		cost_vector = []
-		cost_vector.append(10 ** 0)
-		cost_vector.append(10 ** 3)   
-		gamma_vector = []
-		gamma_vector.append(10 ** 0)
+		cost_vector = [1, 1000]
+        gamma_vector = [1]
 
 		min_acc = 101
 		max_acc = -1
