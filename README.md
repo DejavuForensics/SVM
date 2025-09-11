@@ -9,6 +9,7 @@ There can be several hyperplanes separating the data correctly. SVM is a classif
 ### Follow the instructions:
 In the terminal, install the virtual environment.
 ```
+sudo su
 python -m venv venv
 source venv/bin/activate
 ```
@@ -86,9 +87,16 @@ As redes neurais clássicas visam encontrar um hiperplano de modo a separar as c
 Podem existir vários hiperplanos separando os dados corretamente. Ao contrário de redes clássicas, a SVM é um classificador que visa encontrar um hiperplano melhor do que os demais.
 
 ### Siga as instruções:
-No terminal, instale o _libsvm_.
+No terminal, instale o ambiente virtual
 ```
-pip install libsvm
+sudo su
+python -m venv venv
+source venv/bin/activate
+```
+
+No terminal, instale as dependências.
+```
+pip install -r requirements.txt
 ```
 
 Parâmetros de uso do SVM:
@@ -97,11 +105,7 @@ Parâmetros de uso do SVM:
 
 ```
 python svm.py
-```
-Se surgirem problemas, é provável que sejam causados por incompatibilidades entre as versões das bibliotecas _NumPy_, _SciPy_ e _libsvm_. Nesse caso, recomenda-se realizar a desatualização (_downgrade_) do _SciPy_ para uma versão anterior.
-```
-pip install "scipy<1.12"
-```
+
 
 ## SVM - K-fold
 A validação cruzada é uma técnica estatística usada para avaliar o desempenho de um modelo de aprendizado de máquina. Ela divide o conjunto de dados em várias partes, ou "dobras", para que o modelo possa ser treinado e testado múltiplas vezes em diferentes subconjuntos dos dados. O objetivo é garantir que o modelo generalize bem para dados novos e não vistos,
@@ -116,10 +120,6 @@ O método k-fold é uma forma específica de validação cruzada onde o conjunto
 - **Média e desvio padrão dos resultados**: as métricas de desempenho são calculadas para cada uma das k execuções e, em seguida, a média dessas métricas é computada para obter uma estimativa final do desempenho do modelo.
 
 ### Siga as instruções:
-No terminal, instale o _scikit-learn_.
-```
-pip install scikit-learn
-```
 
 Parâmetros de uso do SVM dotado de validação cruzada _k-fold_:
 
