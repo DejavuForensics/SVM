@@ -81,6 +81,18 @@ python svmParameters.py
 
 # Usage in distinct antiviruses
 
+## Antivirus for malicious Google Chrome extensions
+
+python [svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -tall [Antivirus_Dataset_IoT_SPARC_mELM_format.csv](https://github.com/DejavuForensics/IoT_ARM/blob/main/Antivirus_Dataset_IoT_ARM_mELM_format.csv) -kfold 10 -ty 1 -virusNorm -nh 500 -af dilation -v
+
+```
+Tavares-Silva, S.H.M., Lopes-Lima, S.M., Paranhos-Pinheiro, R. et al.
+Antivirus solution to IoT malware detection with authorial next-generation sandbox.
+The Journal of Supercomputing 81, 151 (2025).
+https://doi.org/10.1007/s11227-024-06506-x
+```
+
+
 ## Antivirus for IoT _malware_ from ARM architectures
 
 python [melm.py](https://github.com/DejavuForensics/mELM/blob/main/melm.py) -tall [Antivirus_Dataset_IoT_SPARC_mELM_format.csv](https://github.com/DejavuForensics/IoT_ARM/blob/main/Antivirus_Dataset_IoT_ARM_mELM_format.csv) -kfold 10 -ty 1 -virusNorm -nh 500 -af dilation -v
@@ -116,7 +128,7 @@ Journal of Computational Science, 82 (2024): 102389.
 https://doi.org/10.1016/j.jocs.2024.102389.
 ```
 
-## Antivirus for Java apps
+## Antivirus for Java malicious apps
 The database is compressed due to the individual file size delimited by github. Download the compressed file (.zip) to your computer and decompress it before running the extreme neural networks.
 
 python [melm.py](https://github.com/DejavuForensics/mELM/blob/main/melm.py) -tall [Antivirus_Dataset_Jar_mELM_format.csv](https://github.com/DejavuForensics/REJAFADA/blob/master/Antivirus_Dataset_Jar_mELM_format.zip) 
@@ -129,7 +141,7 @@ Scientific Reports - Nature Research 12, 1945 (2022).
 https://doi.org/10.1038/s41598-022-05921-5
 ```
 
-## Antivirus for PHP apps
+## Antivirus for PHP malicious apps
 
 python [melm.py](https://github.com/DejavuForensics/mELM/blob/main/melm.py) -tall [Antivirus_Dataset_PHP_batch_1_mELM_format](https://github.com/DejavuForensics/PAEMAL/blob/master/Antivirus_Dataset_PHP_batch_1_mELM_format.csv) 
 -kfold 10 -virusNorm -ty 1 -nh 500 -af dilation -v
@@ -141,7 +153,7 @@ Soft Computing 27, 1471–1491 (2023).
 https://doi.org/10.1007/s00500-022-07447-4
 ```
 
-## Antivirus for JavaScript apps
+## Antivirus for JavaScript malicious apps
 The database is compressed due to the individual file size delimited by github. Download the compressed file (.zip) to your computer and decompress it before running the extreme neural networks.
 
 python [melm.py](https://github.com/DejavuForensics/mELM/blob/main/melm.py) -tall [Antivirus_Dataset_JavaScript_mELM_format.csv](
@@ -153,6 +165,8 @@ de Lima, S.M.L., Souza, D.M., Pinheiro, R.P. et al.
 Next-generation antivirus for JavaScript malware detection based on dynamic features. 
 Knowledge and Information Systems 66, 1337–1370 (2024).
 https://doi.org/10.1007/s10115-023-01978-4
+```
+
 # PT-BR:
 ## SVM: Classificação/Predição
 
