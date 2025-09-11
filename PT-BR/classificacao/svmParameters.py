@@ -299,104 +299,504 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
     <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
-        <title>Relatório de Resultados SVM</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard SVM - Relatório de Resultados</title>
         <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-            body { font-family: Arial, sans-serif; margin: 20px; background-color: #fdfdfd; }
-            .container { max-width: 1200px; margin: 0 auto; background-color: #fff; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-            .metrics-table { width: 100%; border-collapse: collapse; margin: 25px 0; }
-            .metrics-table th, .metrics-table td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: middle; }
-            .metrics-table th { background-color: #0056b3; color: white; text-align: center; }
-            .result-section { background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 5px solid #0056b3; }
-            h1, h2 { color: #333; border-bottom: 2px solid #0056b3; padding-bottom: 10px; }
-            h3 { color: #555; margin-top: 10px; }
-            .subtitle { font-size: 1.1em; color: #666; font-style: italic; margin-top: -5px; margin-bottom: 20px; }
-            .best-result { background-color: #e7f3e7; }
-            .worst-result { background-color: #fdeeee; }
-            .cm-image { max-width: 350px; display: block; margin: 10px auto; }
-            .results-cell b { color: #000000; }
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, Arial;
+                background: linear-gradient(135deg, #8B1538 0%, #A91E4A 50%, #6B1429 100%);
+                min-height: 100vh;
+                color: #333;
+            }
+
+            .dashboard-container {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+
+            .header {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 20px;
+                padding: 30px;
+                margin-bottom: 30px;
+                text-align: center;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .header-content {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+
+            .logo-ufpe {
+                height: 150px;
+                width: auto;
+            }
+
+            .header-text {
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 2.5em;
+                background: linear-gradient(45deg, #8B1538, #A91E4A);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 10px;
+            }
+
+            .subtitle {
+                font-size: 1.2em;
+                color: #666;
+                font-weight: 300;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+
+            .stat-card {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 15px;
+                padding: 25px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            }
+
+            .stat-card.best {
+                border-left: 10px solid #A5D7A7;
+                background: rgba(255, 255, 255, 0.98);
+            }
+
+            .stat-card.worst {
+                border-left: 10px solid #f9a19a;
+                background: rgba(255, 255, 255, 0.98);
+            }
+
+            .card-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .card-icon {
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 15px;
+                font-size: 1.5em;
+                font-weight: bold;
+                color: white;
+            }
+
+            .card-icon.best {
+                background: linear-gradient(45deg, #4CAF50, #66BB6A);
+            }
+
+            .card-icon.worst {
+                background: linear-gradient(45deg, #f44336, #EF5350);
+            }
+
+            .card-title {
+                font-size: 1.3em;
+                font-weight: 600;
+                color: #333;
+            }
+
+            .metric-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 0;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            }
+
+            .metric-row:last-child {
+                border-bottom: none;
+            }
+
+            .metric-label {
+                font-weight: 500;
+                color: #555;
+            }
+
+            .metric-value.worst {
+                font-weight: 600;
+                color: #333;
+                padding: 4px 12px;
+                background: rgba(139, 21, 56, 0.1);
+                border-radius: 20px;
+            }
+
+            .metric-value.best {
+                font-weight: 600;
+                color: #333;
+                padding: 4px 12px;
+                background: rgba(76, 175, 80, 0.1);
+                border-radius: 20px;
+            }
+
+            .cm-container {
+                text-align: center;
+                margin-top: 20px;
+            }
+
+            .cm-image {
+                max-width: 70%;
+                height: auto;
+                border-radius: 5px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+
+            .kernels-section {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 20px;
+                padding: 30px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+        .section-title {
+                font-size: 2em;
+                margin-bottom: 30px;
+                text-align: center;
+                background: linear-gradient(45deg, #8B1538, #A91E4A);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .kernel-group {
+                margin-bottom: 40px;
+            }
+
+            .kernel-title {
+                font-size: 1.5em;
+                font-weight: 600;
+                margin-bottom: 20px;
+                padding: 15px 20px;
+                color: white;
+                border-radius: 10px;
+                text-align: center;
+                background: linear-gradient(45deg, #8B1538, #A91E4A);
+            }
+
+            .kernel-results {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+                gap: 20px;
+            }
+
+            .result-card {
+                background: rgba(255, 255, 255, 0.9);
+                border-radius: 15px;
+                padding: 25px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                transition: transform 0.3s ease;
+            }
+
+            .result-card:hover {
+                transform: translateY(-3px);
+            }
+
+            .result-card.best {
+                border: 2px solid #4CAF50;
+            }
+
+            .result-card.worst {
+                border: 2px solid #f44336;
+            }
+
+            .result-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .result-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 12px;
+                color: white;
+                font-weight: bold;
+            }
+
+            .result-icon.best {
+                background: #4CAF20;
+            }
+
+            .result-icon.worst {
+                background: #f44336;
+            }
+
+            .result-title {
+                font-size: 1.2em;
+                font-weight: 600;
+            }
+
+            .metrics-list {
+                list-style: none;
+                margin-bottom: 20px;
+            }
+
+            .metrics-list li {
+                padding: 8px 0;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .metrics-list li:last-child {
+                border-bottom: none;
+            }
+
+            .metric-name {
+                font-weight: 500;
+                color: #555;
+            }
+
+            .metric-val {
+                font-weight: 600;
+                color: #333;
+            }
+
+            @media (max-width: 768px) {
+                .dashboard-container {
+                    padding: 10px;
+                }
+
+                .header h1 {
+                    font-size: 2em;
+                }
+
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .kernel-results {
+                    grid-template-columns: 1fr;
+                }
+
+                .result-card {
+                    min-width: auto;
+                }
+
+                .header-content {
+                    flex-direction: column;
+                    text-align: center;
+                }
+
+                .header-text {
+                    text-align: center;
+                }
+
+                .logo-ufpe {
+                    height: 60px;
+                }
+            }
+
+            /* Animações suaves */
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .stat-card, .kernels-section {
+                animation: fadeInUp 0.6s ease forwards;
+            }
+
+            .stat-card:nth-child(1) { animation-delay: 0.1s; }
+            .stat-card:nth-child(2) { animation-delay: 0.2s; }
+            .kernels-section { animation-delay: 0.3s; }
         </style>
     </head>
     <body>
-        <div class="container">
-            <h1>Relatório de Avaliação de Parâmetros SVM</h1>
-            <p class="subtitle">A acurácia no teste é a métrica de escolha para os resultados.</p>
+        <div class="dashboard-container">
+            <div class="header">
+                <div class="header-content">
 
-            <div class="result-section">
-                <h2>Resultados Globais</h2>
-                <p>Estes são os melhores e piores desempenhos gerais, definidos pela acurácia de teste em todas as combinações.</p>
-                <table class="metrics-table">
-                    <tr class="best-result"><th colspan="2" style="text-align:center; font-weight:bold;">Melhor Desempenho Geral</th></tr>
-                    <tr class="best-result"><td><b>Configuração (C, γ)</b></td><td>({{ global_results.max.cost }}, {{ global_results.max.gamma }})</td></tr>
-                    <tr class="best-result"><td><b>Melhor Kernel</b></td><td>{{ global_results.max.kernel_name }}</td></tr>
-                    <tr class="best-result"><td><b>Acurácia de Treino</b></td><td>{{ "%.2f"|format(global_results.max.accuracy_train) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_train) }}%</td></tr>
-                    <tr class="best-result"><td><b>Acurácia de Teste</b></td><td>{{ "%.2f"|format(global_results.max.accuracy_test) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_test) }}%</td></tr>
-                    <tr class="best-result"><td><b>Tempo Médio de Treino</b></td><td>{{ "%.4f"|format(global_results.max.time_train) }}s &plusmn; {{ "%.4f"|format(global_results.max.std_time_train) }}s</td></tr>
-                    <tr class="best-result"><td><b>Tempo Médio de Teste</b></td><td>{{ "%.4f"|format(global_results.max.time_test) }}s &plusmn; {{ "%.4f"|format(global_results.max.std_time_test) }}s</td></tr>
-                    <tr class="best-result"><td colspan="2"><img class="cm-image" src="svm_report_images/cm_global_best.png" alt="Matriz de Confusão - Melhor Global"></td></tr>
-
-                    <tr class="worst-result"><th colspan="2" style="text-align:center; font-weight:bold;">Pior Desempenho Geral</th></tr>
-                    <tr class="worst-result"><td><b>Configuração (C, γ)</b></td><td>({{ global_results.min.cost }}, {{ global_results.min.gamma }})</td></tr>
-                    <tr class="worst-result"><td><b>Pior Kernel</b></td><td>{{ global_results.min.kernel_name }}</td></tr>
-                    <tr class="worst-result"><td><b>Acurácia de Treino</b></td><td>{{ "%.2f"|format(global_results.min.accuracy_train) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_train) }}%</td></tr>
-                    <tr class="worst-result"><td><b>Acurácia de Teste</b></td><td>{{ "%.2f"|format(global_results.min.accuracy_test) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_test) }}%</td></tr>
-                    <tr class="worst-result"><td><b>Tempo Médio de Treino</b></td><td>{{ "%.4f"|format(global_results.min.time_train) }}s &plusmn; {{ "%.4f"|format(global_results.min.std_time_train) }}s</td></tr>
-                    <tr class="worst-result"><td><b>Tempo Médio de Teste</b></td><td>{{ "%.4f"|format(global_results.min.time_test) }}s &plusmn; {{ "%.4f"|format(global_results.min.std_time_test) }}s</td></tr>
-                    <tr class="worst-result"><td colspan="2"><img class="cm-image" src="svm_report_images/cm_global_worst.png" alt="Matriz de Confusão - Pior Global"></td></tr>
-                </table>
+                    <div class="header-text">
+                        <img src="../../src/ufpe_logo.png" alt="Logo UFPE" class="logo-ufpe">
+                        <h1>SVM - Avaliação de Parâmetros</h1>
+                        <p class="subtitle"> A acurácia no teste é a métrica de escolha para os resultados</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="result-section">
-                <h2>Resumo por Kernel</h2>
+            <div class="stats-grid">
+                <div class="stat-card best">
+                    <div class="card-header">
+                        <div class="card-icon best">🏆</div>
+                        <div class="card-title">Melhor Desempenho Geral</div>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Configuração (C, γ)</span>
+                        <span class="metric-value best">({{ global_results.max.cost }}, {{ global_results.max.gamma }})</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Melhor Kernel</span>
+                        <span class="metric-value best">{{ global_results.max.kernel_name }}</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Acurácia de Treino</span>
+                        <span class="metric-value best">{{ "%.2f"|format(global_results.max.accuracy_train) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_train) }}%</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Acurácia de Teste</span>
+                        <span class="metric-value best">{{ "%.2f"|format(global_results.max.accuracy_test) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_test) }}%</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Tempo de Treino</span>
+                        <span class="metric-value best">{{ "%.4f"|format(global_results.max.time_train) }}s &plusmn; {{ "%.4f"|format(global_results.max.std_time_train) }}s</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Tempo de Teste</span>
+                        <span class="metric-value best">{{ "%.4f"|format(global_results.max.time_test) }}s &plusmn; {{ "%.4f"|format(global_results.max.std_time_test) }}s</span>
+                    </div>
+
+                    <div class="cm-container">
+                        <img class="cm-image" src="svm_report_images/cm_global_best.png" alt="Matriz de Confusão - Melhor Global">
+                    </div>
+                </div>
+
+                <div class="stat-card worst">
+                    <div class="card-header">
+                        <div class="card-icon worst">📉</div>
+                        <div class="card-title">Pior Desempenho Geral</div>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Configuração (C, γ)</span>
+                        <span class="metric-value worst">({{ global_results.min.cost }}, {{ global_results.min.gamma }})</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Pior Kernel</span>
+                        <span class="metric-value worst">{{ global_results.min.kernel_name }}</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Acurácia de Treino</span>
+                        <span class="metric-value worst">{{ "%.2f"|format(global_results.min.accuracy_train) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_train) }}%</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Acurácia de Teste</span>
+                        <span class="metric-value worst">{{ "%.2f"|format(global_results.min.accuracy_test) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_test) }}%</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Tempo de Treino</span>
+                        <span class="metric-value worst">{{ "%.4f"|format(global_results.min.time_train) }}s &plusmn; {{ "%.4f"|format(global_results.min.std_time_train) }}s</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Tempo de Teste</span>
+                        <span class="metric-value worst">{{ "%.4f"|format(global_results.min.time_test) }}s &plusmn; {{ "%.4f"|format(global_results.min.std_time_test) }}s</span>
+                    </div>
+
+                    <div class="cm-container">
+                        <img class="cm-image" src="svm_report_images/cm_global_worst.png" alt="Matriz de Confusão - Pior Global">
+                    </div>
+                </div>
+            </div>
+
+            <div class="kernels-section">
+                <h2 class="section-title">Resumo por Kernel</h2>
                 {% for kernel_id, data in kernel_results.items() %}
-                <h3>Kernel: <strong>{{ kernel_names[kernel_id] }}</strong></h3>
 
-                <table class="metrics-table">
-                    <tr>
-                        <th>Desempenho</th>
-                        <th>Resultados</th>
-                        <th>Matriz de Confusão Média (Teste)</th>
-                    </tr>
-
-                    {% if data.max_test %}
-                    <tr class="best-result">
-                        <td><b>Melhor Cenário</b></td>
-                        <td class="results-cell">
-                            <ul>
-                                <li><b>Configuração (C, γ):</b> ({{ data.max_test.cost }}, {{ data.max_test.gamma }})<br></li>
-                                <li><b>Acurácia de Teste:</b> {{ "%.2f"|format(data.max_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_test) }}%<br></li>
-                                <li><b>Tempo de Teste:</b> {{ "%.4f"|format(data.max_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_test) }}s</li>
-                                <li><b>Acurácia de Treino:</b> {{ "%.2f"|format(data.max_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_train) }}%<br></li>
-                                <li><b>Tempo de Treino:</b> {{ "%.4f"|format(data.max_test.time_train) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_train) }}s<br></li>
-
+                <div class="kernel-group">
+                    <div class="kernel-title">Kernel {{ kernel_names[kernel_id] }}</div>
+                    <div class="kernel-results">
+                        {% if data.max_test %}
+                        <div class="result-card best">
+                            <div class="result-header">
+                                <div class="result-icon best"></div>
+                                <div class="result-title">Melhor Cenário</div>
+                            </div>
+                            <ul class="metrics-list">
+                                <li><span class="metric-name">Configuração (C, γ):</span><span class="metric-val">({{ data.max_test.cost }}, {{ data.max_test.gamma }})</span></li>
+                                <li><span class="metric-name">Acurácia de Teste:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_test) }}%</span></li>
+                                <li><span class="metric-name">Tempo de Teste:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_test) }}s</span></li>
+                                <li><span class="metric-name">Acurácia de Treino:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_train) }}%</span></li>
+                                <li><span class="metric-name">Tempo de Treino:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.time_train) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_train) }}s</span></li>
                             </ul>
-                        </td>
-                        <td><img class="cm-image" src="svm_report_images/cm_kernel_{{ kernel_names[kernel_id]|replace(' ', '_') }}_best_test.png" alt="MC Melhor Teste"></td>
-                    </tr>
-                    {% endif %}
+                            <div class="cm-container">
+                                <img class="cm-image" src="svm_report_images/cm_kernel_{{ kernel_names[kernel_id]|replace(' ', '_') }}_best_test.png" alt="MC Melhor Teste">
+                            </div>
+                        </div>
+                        {% endif %}
 
-                    {% if data.min_test %}
-                    <tr class="worst-result">
-                        <td><b>Pior Cenário</b></td>
-                        <td class="results-cell">
-                            <ul>
-                                <li><b>Configuração (C, γ):</b> ({{ data.min_test.cost }}, {{ data.min_test.gamma }})<br></li>
-                                <li><b>Acurácia de Teste:</b> {{ "%.2f"|format(data.min_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_test) }}%<br></li>
-                                <li><b>Tempo de Teste:</b> {{ "%.4f"|format(data.min_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_test) }}s</li>
-                                <li><b>Acurácia de Treino:</b> {{ "%.2f"|format(data.min_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_train) }}%<br></li>
-                                <li><b>Tempo de Treino:</b> {{ "%.4f"|format(data.min_test.time_train) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_train) }}s<br></li>
-
+                        {% if data.min_test %}
+                        <div class="result-card worst">
+                            <div class="result-header">
+                                <div class="result-icon worst"></div>
+                                <div class="result-title">Pior Cenário</div>
+                            </div>
+                            <ul class="metrics-list">
+                                <li><span class="metric-name">Configuração (C, γ):</span><span class="metric-val">({{ data.min_test.cost }}, {{ data.min_test.gamma }})</span></li>
+                                <li><span class="metric-name">Acurácia de Teste:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_test) }}%</span></li>
+                                <li><span class="metric-name">Tempo de Teste:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_test) }}s</span></li>
+                                <li><span class="metric-name">Acurácia de Treino:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_train) }}%</span></li>
+                                <li><span class="metric-name">Tempo de Treino:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.time_train) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_train) }}s</span></li>
                             </ul>
-                        </td>
-                        <td><img class="cm-image" src="svm_report_images/cm_kernel_{{ kernel_names[kernel_id]|replace(' ', '_') }}_worst_test.png" alt="MC Pior Teste"></td>
-                    </tr>
-                    {% endif %}
-                </table>
+                            <div class="cm-container">
+                                <img class="cm-image" src="svm_report_images/cm_kernel_{{ kernel_names[kernel_id]|replace(' ', '_') }}_worst_test.png" alt="MC Pior Teste">
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
                 {% endfor %}
             </div>
         </div>
     </body>
     </html>
+
     """
 
     global_results['max']['kernel_name'] = kernel_str(global_results['max']['kernel_id'])
