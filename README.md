@@ -105,7 +105,7 @@ Parâmetros de uso do SVM:
 
 ```
 python svm.py
-
+```
 
 ## SVM - K-fold
 A validação cruzada é uma técnica estatística usada para avaliar o desempenho de um modelo de aprendizado de máquina. Ela divide o conjunto de dados em várias partes, ou "dobras", para que o modelo possa ser treinado e testado múltiplas vezes em diferentes subconjuntos dos dados. O objetivo é garantir que o modelo generalize bem para dados novos e não vistos,
