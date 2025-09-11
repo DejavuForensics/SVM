@@ -83,13 +83,13 @@ python svmParameters.py
 
 ## Antivirus for malicious Google Chrome extensions
 
-python [svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -tall [Antivirus_Dataset_IoT_SPARC_mELM_format.csv](https://github.com/DejavuForensics/IoT_ARM/blob/main/Antivirus_Dataset_IoT_ARM_mELM_format.csv) -kfold 10 -ty 1 -virusNorm -nh 500 -af dilation -v
+python [EN-US/classification/svmParameters.py](https://github.com/DejavuForensics/SVM/blob/main/EN-US/classification/svmParameters.py) -dataset [Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv](https://github.com/DejavuForensics/SVM/blob/main/Antiviruses/Antivirus_Dataset_GoogleChromeExtension_mELM_format.csv) 
 
 ```
-Tavares-Silva, S.H.M., Lopes-Lima, S.M., Paranhos-Pinheiro, R. et al.
-Antivirus solution to IoT malware detection with authorial next-generation sandbox.
-The Journal of Supercomputing 81, 151 (2025).
-https://doi.org/10.1007/s11227-024-06506-x
+Gabriela Leite Pereira, Leonardo Silvino Brito, Sidney Marlon Lopes de Lima,
+Antivirus applied to Google Chrome's extension malware,
+Computers & Security, 156, 104465 (2025).
+https://doi.org/10.1016/j.cose.2025.104465
 ```
 
 
