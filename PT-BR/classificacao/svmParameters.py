@@ -103,7 +103,7 @@ def pruningDataset(y, x, threshold, save_files=True):
         x_pruned.append(pruned_sample)
 
     if save_files:
-        save_libsvm(y, x_pruned, 'globalPruned.csv')
+        save_libsvm(y, x_pruned, 'globalPruned.libsvm')
 
     return (y, x_pruned)
 
