@@ -558,9 +558,6 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
                 text-align: center;
             }
 
-            .logo-ufpe {
-                height: 60px;
-            }
         }
 
 
@@ -587,7 +584,7 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
 <body>
     <div class="dashboard-container">
         <div class="header">
-			<img src="../../Brasão-Extenso---PNG---RGB.png" alt="Logo UFPE" class="logo-ufpe">
+			<img src="../../src/ufpe_logo.png" alt="Logo UFPE" class="logo-ufpe">
             <h1>SVM - Parameter Evaluation</h1>
             <p class="subtitle">Test accuracy is the metric of choice for the results</p>
         </div>
