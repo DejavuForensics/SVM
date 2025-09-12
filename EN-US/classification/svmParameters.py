@@ -669,7 +669,7 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
         print(f"\nError saving HTML report: {e}")
 
 def setOpts(argv):
-	"""Configures and parses the command-line arguments."""
+    """Configures and parses the command-line arguments."""
     parser = argparse.ArgumentParser(description='SVM Parameter Tester with HTML Report Generation.')
     parser.add_argument('-dataset', dest='dataset', action='store',
                         default='heart_scale', help='Dataset file name (LIBSVM format).')
