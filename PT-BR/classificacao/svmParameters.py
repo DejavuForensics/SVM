@@ -277,7 +277,8 @@ class svmParameters():
 
         return global_results, kernel_results
 
-def generate_html_report(global_results, kernel_results, output_file='svm_report.html'):
+def generate_html_report(global_results, kernel_results, threshold, output_file='svm_report.html'):
+    print(threshold)
     """Gera um relatório HTML com a tabela de resumo por kernel simplificada."""
     img_dir = 'svm_report_images'
     os.makedirs(img_dir, exist_ok=True)
@@ -674,6 +675,11 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
                     </div>
 
                     <div class="metric-row">
+                        <span class="metric-label">Ponto de corte</span>
+                        <span class="metric-value best">{{ threshold }}</span>
+                    </div>
+
+                    <div class="metric-row">
                         <span class="metric-label">Melhor Kernel</span>
                         <span class="metric-value best">{{ global_results.max.kernel_name }}</span>
                     </div>
@@ -712,6 +718,11 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
                     <div class="metric-row">
                         <span class="metric-label">Configuração (C, γ)</span>
                         <span class="metric-value worst">({{ global_results.min.cost }}, {{ global_results.min.gamma }})</span>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-label">Ponto de corte</span>
+                        <span class="metric-value best">{{ threshold }}</span>
                     </div>
 
                     <div class="metric-row">
@@ -760,6 +771,7 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
                             </div>
                             <ul class="metrics-list">
                                 <li><span class="metric-name">Configuração (C, γ):</span><span class="metric-val">({{ data.max_test.cost }}, {{ data.max_test.gamma }})</span></li>
+                                <li><span class="metric-name">Ponto de corte:</span><span class="metric-val">{{ threshold }}</span></li>
                                 <li><span class="metric-name">Acurácia de Teste:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_test) }}%</span></li>
                                 <li><span class="metric-name">Tempo de Teste:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_test) }}s</span></li>
                                 <li><span class="metric-name">Acurácia de Treino:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_train) }}%</span></li>
@@ -779,6 +791,7 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
                             </div>
                             <ul class="metrics-list">
                                 <li><span class="metric-name">Configuração (C, γ):</span><span class="metric-val">({{ data.min_test.cost }}, {{ data.min_test.gamma }})</span></li>
+                                <li><span class="metric-name">Ponto de corte:</span><span class="metric-val">{{ threshold }}</span></li>
                                 <li><span class="metric-name">Acurácia de Teste:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_test) }}%</span></li>
                                 <li><span class="metric-name">Tempo de Teste:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_test) }}s</span></li>
                                 <li><span class="metric-name">Acurácia de Treino:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_train) }}%</span></li>
@@ -807,7 +820,8 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
     html_content = template.render(
         global_results=global_results,
         kernel_results=kernel_results,
-        kernel_names=kernel_names
+        kernel_names=kernel_names,
+        threshold=threshold
     )
 
     try:
@@ -836,4 +850,4 @@ if __name__ == "__main__":
     dataset, threshold = setOpts(sys.argv[1:])
     experiment = svmParameters()
     global_results, kernel_results = experiment.main(dataset, threshold)
-    generate_html_report(global_results, kernel_results)
+    generate_html_report(global_results, kernel_results, threshold)
