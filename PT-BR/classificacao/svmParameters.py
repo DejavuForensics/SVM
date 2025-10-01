@@ -278,7 +278,6 @@ class svmParameters():
         return global_results, kernel_results
 
 def generate_html_report(global_results, kernel_results, threshold, output_file='svm_report.html'):
-    print(threshold)
     """Gera um relatório HTML com a tabela de resumo por kernel simplificada."""
     img_dir = 'svm_report_images'
     os.makedirs(img_dir, exist_ok=True)
