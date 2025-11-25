@@ -218,17 +218,28 @@ class svmParameters():
 
 def generate_html_report(global_results, kernel_results, output_file='svm_report.html'):
     """Generates an HTML report from the SVM parameter evaluation results."""
-    img_dir = 'svm_report_images'
+    
+    if global_results is None:
+        return
+
+    # Use script directory to save output
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    img_dir_name = 'svm_report_images'
+    img_dir = os.path.join(script_dir, img_dir_name)
     os.makedirs(img_dir, exist_ok=True)
 
-    plot_and_save_cm(global_results['max']['confusion_matrix'], 'Average CM - Best Overall Performance (Test)', f'{img_dir}/cm_global_best.png')
-    plot_and_save_cm(global_results['min']['confusion_matrix'], 'Average CM - Worst Overall Performance (Test)', f'{img_dir}/cm_global_worst.png')
+    def get_img_path(filename):
+        return os.path.join(img_dir, filename)
+
+    plot_and_save_cm(global_results['max']['confusion_matrix'], 'Average CM - Best Overall Performance (Test)', get_img_path('cm_global_best.png'))
+    plot_and_save_cm(global_results['min']['confusion_matrix'], 'Average CM - Worst Overall Performance (Test)', get_img_path('cm_global_worst.png'))
+    
     for kernel_id, data in kernel_results.items():
         k_name = kernel_str(kernel_id).replace(" ", "_")
         if data.get('max_test'):
-            plot_and_save_cm(data['max_test']['confusion_matrix_test'], f'Average CM - Best Test ({kernel_str(kernel_id)})', f'{img_dir}/cm_kernel_{k_name}_best_test.png')
+            plot_and_save_cm(data['max_test']['confusion_matrix_test'], f'Average CM - Best Test ({kernel_str(kernel_id)})', get_img_path(f'cm_kernel_{k_name}_best_test.png'))
         if data.get('min_test'):
-            plot_and_save_cm(data['min_test']['confusion_matrix_test'], f'Average CM - Worst Test ({kernel_str(kernel_id)})', f'{img_dir}/cm_kernel_{k_name}_worst_test.png')
+            plot_and_save_cm(data['min_test']['confusion_matrix_test'], f'Average CM - Worst Test ({kernel_str(kernel_id)})', get_img_path(f'cm_kernel_{k_name}_worst_test.png'))
 
     html_template = """
     <!DOCTYPE html>
@@ -238,353 +249,44 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVM Dashboard - Results Report</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, Arial;
-            background: linear-gradient(135deg, #8B1538 0%, #A91E4A 50%, #6B1429 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .logo-ufpe {
-            height: 150px;
-            width: auto;
-        }
-
-        .header-text {
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            background: linear-gradient(45deg, #8B1538, #A91E4A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 1.2em;
-            color: #666;
-            font-weight: 300;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .stat-card.best {
-            border-left: 10px solid #A5D7A7;
-            background: rgba(255, 255, 255, 0.98);
-        }
-
-        .stat-card.worst {
-            border-left: 10px solid #f9a19a;
-            background: rgba(255, 255, 255, 0.98);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .card-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: white;
-        }
-
-        .card-icon.best {
-            background: linear-gradient(45deg, #4CAF50, #66BB6A);
-        }
-
-        .card-icon.worst {
-            background: linear-gradient(45deg, #f44336, #EF5350);
-        }
-
-        .card-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .metric-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .metric-row:last-child {
-            border-bottom: none;
-        }
-
-        .metric-label {
-            font-weight: 500;
-            color: #555;
-        }
-
-        .metric-value.worst {
-            font-weight: 600;
-            color: #333;
-            padding: 4px 12px;
-            background: rgba(139, 21, 56, 0.1);
-            border-radius: 20px;
-        }
-
-        .metric-value.best {
-            font-weight: 600;
-            color: #333;
-            padding: 4px 12px;
-            background: rgba(76, 175, 80, 0.1);
-            border-radius: 20px;
-        }
-
-        .cm-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .cm-image {
-            max-width: 70%;
-            height: auto;
-            border-radius: 5px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .kernels-section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-       .section-title {
-            font-size: 2em;
-            margin-bottom: 30px;
-            text-align: center;
-            background: linear-gradient(45deg, #8B1538, #A91E4A);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .kernel-group {
-            margin-bottom: 40px;
-        }
-
-        .kernel-title {
-            font-size: 1.5em;
-            font-weight: 600;
-            margin-bottom: 20px;
-            padding: 15px 20px;
-            color: white;
-            border-radius: 10px;
-            text-align: center;
-            background: linear-gradient(45deg, #8B1538, #A91E4A);
-        }
-
-        .kernel-results {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 20px;
-        }
-
-        .result-card {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .result-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .result-card.best {
-            border: 2px solid #4CAF50;
-        }
-
-        .result-card.worst {
-            border: 2px solid #f44336;
-        }
-
-        .result-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .result-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            color: white;
-            font-weight: bold;
-        }
-
-        .result-icon.best {
-            background: #4CAF20;
-        }
-
-        .result-icon.worst {
-            background: #f44336;
-        }
-
-        .result-title {
-            font-size: 1.2em;
-            font-weight: 600;
-        }
-
-        .metrics-list {
-            list-style: none;
-            margin-bottom: 20px;
-        }
-
-        .metrics-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .metrics-list li:last-child {
-            border-bottom: none;
-        }
-
-        .metric-name {
-            font-weight: 500;
-            color: #555;
-        }
-
-        .metric-val {
-            font-weight: 600;
-            color: #333;
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-container {
-                padding: 10px;
-            }
-
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .kernel-results {
-                grid-template-columns: 1fr;
-            }
-
-            .result-card {
-                min-width: auto;
-            }
-
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .header-text {
-                text-align: center;
-            }
-
-        }
-
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .stat-card, .kernels-section {
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        .stat-card:nth-child(1) { animation-delay: 0.1s; }
-        .stat-card:nth-child(2) { animation-delay: 0.2s; }
-        .kernels-section { animation-delay: 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, Arial; background: linear-gradient(135deg, #8B1538 0%, #A91E4A 50%, #6B1429 100%); min-height: 100vh; color: #333; }
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; margin-bottom: 30px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .logo-ufpe { height: 150px; width: auto; }
+        .header h1 { font-size: 2.5em; background: linear-gradient(45deg, #8B1538, #A91E4A); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+        .subtitle { font-size: 1.2em; color: #666; font-weight: 300; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 15px; padding: 25px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15); }
+        .stat-card.best { border-left: 10px solid #A5D7A7; background: rgba(255, 255, 255, 0.98); }
+        .stat-card.worst { border-left: 10px solid #f9a19a; background: rgba(255, 255, 255, 0.98); }
+        .card-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .card-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1.5em; font-weight: bold; color: white; }
+        .card-icon.best { background: linear-gradient(45deg, #4CAF50, #66BB6A); }
+        .card-icon.worst { background: linear-gradient(45deg, #f44336, #EF5350); }
+        .card-title { font-size: 1.3em; font-weight: 600; color: #333; }
+        .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+        .metric-value.best { font-weight: 600; padding: 4px 12px; background: rgba(76, 175, 80, 0.1); border-radius: 20px; }
+        .metric-value.worst { font-weight: 600; padding: 4px 12px; background: rgba(139, 21, 56, 0.1); border-radius: 20px; }
+        .cm-container { text-align: center; margin-top: 20px; }
+        .cm-image { max-width: 70%; height: auto; border-radius: 5px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .kernels-section { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .section-title { font-size: 2em; margin-bottom: 30px; text-align: center; background: linear-gradient(45deg, #8B1538, #A91E4A); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .kernel-title { font-size: 1.5em; font-weight: 600; margin-bottom: 20px; padding: 15px 20px; color: white; border-radius: 10px; text-align: center; background: linear-gradient(45deg, #8B1538, #A91E4A); }
+        .kernel-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
+        .result-card { background: rgba(255, 255, 255, 0.9); border-radius: 15px; padding: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
+        .metrics-list li { padding: 8px 0; border-bottom: 1px solid rgba(0, 0, 0, 0.05); display: flex; justify-content: space-between; align-items: center; }
+        .result-card.best { border: 2px solid #4CAF50; } .result-card.worst { border: 2px solid #f44336; }
+        .result-icon.best { background: #4CAF20; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; color: white; }
+        .result-icon.worst { background: #f44336; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px; color: white; }
+        .result-header { display: flex; align-items: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
     <div class="dashboard-container">
         <div class="header">
-			<img src="../../src/ufpe_logo.png" alt="Logo UFPE" class="logo-ufpe">
+            <img src="../../src/ufpe_logo.png" alt="Logo UFPE" class="logo-ufpe">
             <h1>SVM - Parameter Evaluation</h1>
             <p class="subtitle">Test accuracy is the metric of choice for the results</p>
         </div>
@@ -620,10 +322,10 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
                         <div class="result-header"><div class="result-icon best">👍</div><div class="result-title">Best Case Scenario</div></div>
                         <ul class="metrics-list">
                             <li><span class="metric-name">Configuration (C, γ):</span><span class="metric-val">({{ data.max_test.cost }}, {{ data.max_test.gamma }})</span></li>
-                            <li><span class="metric-name">Test Accuracy:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_test) }}%</span></li>
-                            <li><span class="metric-name">Testing Time:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_test) }}s</span></li>
                             <li><span class="metric-name">Train Accuracy:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_train) }}%</span></li>
+                            <li><span class="metric-name">Test Accuracy:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_test) }}%</span></li>
                             <li><span class="metric-name">Training Time:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.time_train) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_train) }}s</span></li>
+                            <li><span class="metric-name">Testing Time:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_test) }}s</span></li>
                         </ul>
                         <div class="cm-container"><img class="cm-image" src="svm_report_images/cm_kernel_{{ kernel_names[kernel_id]|replace(' ', '_') }}_best_test.png" alt="CM Best Test"></div>
                     </div>{% endif %}
@@ -631,10 +333,10 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
                         <div class="result-header"><div class="result-icon worst">👎</div><div class="result-title">Worst Case Scenario</div></div>
                         <ul class="metrics-list">
                             <li><span class="metric-name">Configuration (C, γ):</span><span class="metric-val">({{ data.min_test.cost }}, {{ data.min_test.gamma }})</span></li>
-                            <li><span class="metric-name">Test Accuracy:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_test) }}%</span></li>
-                            <li><span class="metric-name">Testing Time:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_test) }}s</span></li>
                             <li><span class="metric-name">Train Accuracy:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_train) }}%</span></li>
+                            <li><span class="metric-name">Test Accuracy:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_test) }}%</span></li>
                             <li><span class="metric-name">Training Time:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.time_train) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_train) }}s</span></li>
+                            <li><span class="metric-name">Testing Time:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_test) }}s</span></li>
                         </ul>
                         <div class="cm-container"><img class="cm-image" src="svm_report_images/cm_kernel_{{ kernel_names[kernel_id]|replace(' ', '_') }}_worst_test.png" alt="CM Worst Test"></div>
                     </div>{% endif %}
@@ -658,10 +360,11 @@ def generate_html_report(global_results, kernel_results, output_file='svm_report
         kernel_names=kernel_names
     )
 
+    output_path = os.path.join(script_dir, output_file)
     try:
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
-        print(f"\nHTML report generated successfully: '{output_file}'")
+        print(f"\nHTML report generated successfully: '{output_path}'")
     except IOError as e:
         print(f"\nError saving HTML report: {e}")
 
