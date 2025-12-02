@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-SVM Parameters Evaluation Script - Gemini v8.0 (Data Leakage Protection)
+SVM Parameters Evaluation Script - (Data Leakage Protection)
 Features:
 - AUTOMATIC Dirty Feature Removal (Anti-Cheating)
 - Real Standard Deviation on Confusion Matrices
