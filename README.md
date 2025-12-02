@@ -8,14 +8,14 @@ There can be several hyperplanes separating the data correctly. SVM is a classif
 
 ### Follow the instructions:
 In the terminal, install the virtual environment.
-```
+```js
 sudo su
 python -m venv venv
 source venv/bin/activate
 ```
 
 In the terminal, install requirements.
-```
+```js
 pip install -r requirements.txt
 ```
 
@@ -23,10 +23,34 @@ Parameters for using the SVM to recognise patterns or prediction:
 
 -	-dataset: specifies the database path. By default, the _heart_scale_ and _bodyfat_scale_ databases are used for classification and regression, respectively.
 
-```
+```js
 python svm.py
 ```
 
+Before executing the SVM script, the dataset must be converted from the .csv format to the .libsvm format. Refer to the [“Usage in distinct antivirus programs”](https://github.com/DejavuForensics/SVM?tab=readme-ov-file#usage-in-distinct-antiviruses) section for the available conversion methods and supported tooling.
+
+### Example of usage
+1. Standard Execution **(Recommended)**
+
+Runs the script checking only for Data Leakage, keeping all other original features.
+
+```js
+python svmParameters.py -dataset ../../Antiviruses/Antivirus_Dataset_IoT_ARM_mELM_format.libsvm
+```
+
+2. Execution with Pruning **(Feature Selection)**
+
+Runs the script removing Data Leakage **AND ALSO** removing features with correlation below the specified value (e.g., 0.15). Useful for very large or noisy datasets.
+
+```js
+python svmParameters.py -dataset ../../Antiviruses/Antivirus_Dataset_IoT_ARM_mELM_format.libsvm -threshold 0.15
+```
+
+**Parameters:**
+
+- dataset: **(Required)** Path to the data file in LIBSVM format. (Usually found in the **Antiviruses** folder)
+
+- threshold: **(Optional)** Float value between 0 and 1. Defines the minimum correlation to keep a feature (e.g., 0.15 keeps only features with correlation > 15%).
 
 ## SVM: K-fold
 Cross-validation is a statistical technique. Researchers use it to assess the performance of a machine learning model. It divides the data set into parts, or ‘folds’. You can train and test the model many times on different data subsets. The aim is to ensure that the model generalises well to new and unseen data. The k-fold method is a type of cross-validation. In it, the data set is randomly split into k equal subsets (or folds). The k-fold involves the following steps:
@@ -45,7 +69,7 @@ Parameters for using the SVM with _k-fold_ cross-validation:
 
 -	-dataset: specifies the database path. By default, the _heart_scale_ and _bodyfat_scale_ databases are used for classification and regression, respectively.
 
-```
+```js
 python svmKfold.py
 ```
 
@@ -75,7 +99,7 @@ Parameters for using the SVM with optimised parameter study:
 
 -	-dataset: specifies the database path. By default, the _heart_scale_ and _bodyfat_scale_ databases are used for classification and regression respectively.
 
-```
+```js
 python svmParameters.py
 ```
 
@@ -186,14 +210,14 @@ Podem existir vários hiperplanos separando os dados corretamente. Ao contrário
 
 ### Siga as instruções:
 No terminal, instale o ambiente virtual
-```
+```js
 sudo su
 python -m venv venv
 source venv/bin/activate
 ```
 
 No terminal, instale as dependências.
-```
+```js
 pip install -r requirements.txt
 ```
 
@@ -201,9 +225,35 @@ Parâmetros de uso do SVM:
 
 -	-dataset: especifica o caminho da base de dados. Por padrão, as bases de dados _heart_scale_ e _bodyfat_scale_ são empregadas na classificação e regressão, respectivamente.
 
-```
+```js
 python svm.py
 ```
+
+Antes de executar o script SVM, o conjunto de dados deve ser convertido do formato .csv para o formato .libsvm. Consulte a seção [“Utilização em antivírus distintos”](https://github.com/DejavuForensics/SVM?tab=readme-ov-file#utiliza%C3%A7%C3%A3o-em-antiv%C3%ADrus-distintos) para conhecer os métodos de conversão disponíveis e as ferramentas compatíveis.
+
+### Exemplo de uso
+1. Execução padrão **(recomendado)**
+
+Executa o script verificando apenas o vazamento de dados, mantendo todos os outros recursos originais.
+
+```js
+python svmParameters.py -dataset ../../Antiviruses/Antivirus_Dataset_IoT_ARM_mELM_format.libsvm
+```
+
+2. Execução com poda **(seleção de recursos)**
+
+Executa o script removendo o vazamento de dados **E TAMBÉM** removendo recursos com correlação abaixo do valor especificado (por exemplo, 0,15). Útil para conjuntos de dados muito grandes ou ruidosos.
+
+```js
+python svmParameters.py -dataset ../../Antiviruses/Antivirus_Dataset_IoT_ARM_mELM_format.libsvm -threshold 0.15
+```
+
+**Parâmetros:**
+
+- dataset: **(Obrigatório)** Caminho para o arquivo de dados no formato LIBSVM. (Normalmente encontrado na pasta **Antiviruses**)
+
+- threshold: **(Opcional)** Valor flutuante entre 0 e 1. Define a correlação mínima para manter um recurso (por exemplo, 0,15 mantém apenas recursos com correlação > 15%).
+
 
 ## SVM - K-fold
 A validação cruzada é uma técnica estatística usada para avaliar o desempenho de um modelo de aprendizado de máquina. Ela divide o conjunto de dados em várias partes, ou "dobras", para que o modelo possa ser treinado e testado múltiplas vezes em diferentes subconjuntos dos dados. O objetivo é garantir que o modelo generalize bem para dados novos e não vistos,
