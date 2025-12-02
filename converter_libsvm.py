@@ -1,102 +1,126 @@
 import pandas as pd
-import sys
+import argparse
 import os
+import sys
+from sklearn.datasets import dump_svmlight_file
 
-def csv_to_libsvm(input_file, output_file):
-    print(f"   [INFO] Lendo '{input_file}'...")
+def configurar_diretorios(nome_arquivo_saida):
+    """
+    Ensures the output is always saved in the 'Antiviruses' folder
+    next to the script, regardless of where the user calls the command from.
+    """
+    # 1. Get the absolute path where THIS script is located
+    diretorio_script = os.path.dirname(os.path.abspath(__file__))
 
-    # Tenta ler com ; (padrão mELM). Se falhar, tenta com virgula.
-    try:
-        df = pd.read_csv(input_file, delimiter=';', engine='python')
-        if df.shape[1] < 2:
-            raise ValueError("Separador parece errado")
-    except:
-        print("   [AVISO] Falha ao ler com ';'. Tentando ler com ','...")
-        df = pd.read_csv(input_file, delimiter=',', engine='python')
+    # 2. Define and create the 'Antiviruses' folder
+    pasta_destino = os.path.join(diretorio_script, "Antiviruses")
+    if not os.path.exists(pasta_destino):
+        os.makedirs(pasta_destino)
+        print(f"📁 Folder created: {pasta_destino}")
 
-    # Remove colunas vazias
-    df = df.dropna(axis=1, how='all')
+    # 3. Clean previous paths and force save to the correct folder
+    nome_base = os.path.basename(nome_arquivo_saida)
+    caminho_final = os.path.join(pasta_destino, nome_base)
 
-    # Validação básica
-    if df.empty or df.shape[1] < 2:
-        raise ValueError("O arquivo CSV parece estar vazio ou não tem colunas suficientes.")
+    return caminho_final
 
-    label_map = {0: -1, 1: 1}
-    lines_written = 0
+def carregar_dados(caminho_arquivo):
+    """
+    Loads .csv or .xlsx intelligently, prioritizing the semicolon (;) separator.
+    """
+    print(f"📖 Reading file: {caminho_arquivo} ...")
 
-    with open(output_file, 'w') as f_out:
-        for _, row in df.iterrows():
-            try:
-                # Tenta pegar a Label da coluna de índice 1
-                original_label = int(row.iloc[1])
-                mapped_label = label_map.get(original_label, original_label)
-            except:
-                continue
-
-            line = str(mapped_label)
-            # Features da coluna 2 em diante
-            for idx in range(2, len(row)):
-                value = row.iloc[idx]
-                if pd.notna(value) and float(value) != 0:
-                    line += f" {idx-1}:{value}"
-
-            f_out.write(line + '\n')
-            lines_written += 1
-
-    print(f"   [INFO] {lines_written} amostras processadas.")
-    if lines_written == 0:
-        raise ValueError("Nenhuma linha foi convertida.")
-
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Uso: python converter_libsvm.py <arquivo_entrada.csv> <arquivo_saida.libsvm>")
+    if not os.path.exists(caminho_arquivo):
+        print(f"❌ Error: The file '{caminho_arquivo}' does not exist.")
         sys.exit(1)
 
-    # --- Definições de Caminhos ---
-    script_dir = os.path.dirname(os.path.abspath(__file__)) # Pasta onde este script está
-    input_arg = sys.argv[1]
-    output_filename = os.path.basename(sys.argv[2]) # Pega só o nome do arquivo, ignora pastas anteriores
-
-    # Define a pasta de destino fixa "Antiviruses"
-    target_folder = os.path.join(script_dir, "Antiviruses")
-
-    # Garante que a pasta Antiviruses existe
-    if not os.path.exists(target_folder):
-        try:
-            os.makedirs(target_folder)
-            print(f"[INFO] Pasta criada: {target_folder}")
-        except OSError as e:
-            print(f"❌ ERRO: Não foi possível criar a pasta 'Antiviruses'. {e}")
-            sys.exit(1)
-
-    # Define caminhos absolutos para entrada e saída
-    input_abs = os.path.abspath(input_arg)
-    output_abs = os.path.join(target_folder, output_filename)
-
-    print("="*60)
-    print("CONVERSOR CSV -> LIBSVM")
-    print("="*60)
-
     try:
-        # Executa a conversão já salvando no local correto
-        csv_to_libsvm(input_abs, output_abs)
-
-        # Verifica se criou mesmo
-        if not os.path.exists(output_abs) or os.path.getsize(output_abs) == 0:
-            print(f"\n❌ ERRO: Arquivo vazio ou não criado.")
+        if caminho_arquivo.lower().endswith('.csv'):
+            # FINAL FIX: Force semicolon separator for this specific format
+            df = pd.read_csv(caminho_arquivo, sep=';', engine='python')
+        elif caminho_arquivo.lower().endswith(('.xls', '.xlsx')):
+            df = pd.read_excel(caminho_arquivo)
+        else:
+            print("❌ Error: Unknown format. Please use .csv or .xlsx")
             sys.exit(1)
 
-        print(f"\n✅ Conversão concluída com sucesso.")
+        # Clean whitespaces in column names (CRUCIAL)
+        df.columns = df.columns.str.strip()
+        return df
 
     except Exception as e:
-        print(f"\n❌ ERRO FATAL: {e}")
-        # Limpeza em caso de erro (arquivo parcial corrompido)
-        if os.path.exists(output_abs):
-            os.remove(output_abs)
+        print(f"❌ Critical error opening file: {e}")
         sys.exit(1)
 
-    # Resumo final
-    print("\n" + "="*60)
-    print("ARQUIVO SALVO EM:")
-    print(f"📂 {output_abs}")
-    print("="*60)
+def identificar_coluna_label(df, label_usuario):
+    """
+    Checks for the exact label column name provided or the assumed default.
+    """
+    # Check 1: Exact match of the user's argument (or the default argument)
+    if label_usuario in df.columns:
+        return label_usuario
+
+    # If it fails, check for the known complex name used by this dataset format
+    coluna_padrao_conhecida = "class (0:benign, 1:malware)"
+    if coluna_padrao_conhecida in df.columns:
+        return coluna_padrao_conhecida
+
+    # If both fail, the script fails exactly where the original must have failed.
+    print(f"⚠️  The column '{label_usuario}' was not found exactly.")
+    print("❌ No label column found. Check your CSV.")
+    print(f"Available columns: {list(df.columns)}")
+    sys.exit(1)
+
+def converter_para_libsvm(df, coluna_label, caminho_saida):
+    """
+    Processes data and saves it in LIBSVM format.
+    """
+    print("⚙️  Processing data...")
+
+    # Separate X (Data) and y (Target)
+    y = df[coluna_label]
+    X = df.drop(columns=[coluna_label])
+
+    # 1. Fill missing values (NaN) with 0
+    X.fillna(0, inplace=True)
+
+    # 2. Convert text to numbers (One-Hot Encoding)
+    # Ex: Column "Protocol" (TCP, UDP) becomes "Protocol_TCP" (0,1)
+    X = pd.get_dummies(X)
+
+    # 3. Convert Label to numeric if it is text
+    # Ex: "benign" becomes 0, "malware" becomes 1
+    if y.dtype == 'object':
+        y = pd.factorize(y)[0]
+        print("ℹ️  Text labels converted to numeric automatically.")
+
+    print(f"📊 Statistics: {X.shape[0]} samples | {X.shape[1]} attributes (features)")
+
+    try:
+        dump_svmlight_file(X, y, caminho_saida, zero_based=False)
+        print(f"✅ SUCCESS! File saved at:\n   {caminho_saida}")
+    except Exception as e:
+        print(f"❌ Error saving LIBSVM file: {e}")
+
+# --- Main Flow ---
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="CSV/Excel to LIBSVM Converter (V3.3 Strict)")
+    parser.add_argument("input_file", help="Input file path (.csv or .xlsx)")
+    parser.add_argument("output_file", help="Output file name (.libsvm)")
+    # Set the default to the complex name to meet the "no argument needed" demand for this specific file
+    parser.add_argument("--label", default="class (0:benign, 1:malware)", help="Exact name of the target column (Use quotes if it has spaces)")
+    parser.add_argument("--task", default="classification", help="Ignored (kept for compatibility)")
+
+    args = parser.parse_args()
+
+    # 1. Setup paths (Antiviruses folder)
+    final_path = configurar_diretorios(args.output_file)
+
+    # 2. Load Data (CSV/Excel + Auto Separator)
+    df = carregar_dados(args.input_file)
+
+    # 3. Validate Label Column
+    coluna_correta = identificar_coluna_label(df, args.label)
+
+    # 4. Convert and Save
+    converter_para_libsvm(df, coluna_correta, final_path)
