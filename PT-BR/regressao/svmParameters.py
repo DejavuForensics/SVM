@@ -17,7 +17,7 @@ class svmParameters():
 		y, x = svm_read_problem(dataset)
 		
 		cost_vector = [1, 1000]
-        gamma_vector = [1]
+		gamma_vector = [1]
 
 		min_acc = 101
 		max_acc = -1
