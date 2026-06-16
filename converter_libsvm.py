@@ -13,7 +13,7 @@ def configurar_diretorios(nome_arquivo_saida):
     diretorio_script = os.path.dirname(os.path.abspath(__file__))
 
     # 2. Define and create the 'Antiviruses' folder
-    pasta_destino = os.path.join(diretorio_script, "Antiviruses")
+    pasta_destino = os.path.join(diretorio_script, "docx_odt_oneclass_system")
     if not os.path.exists(pasta_destino):
         os.makedirs(pasta_destino)
         print(f"📁 Folder created: {pasta_destino}")
@@ -95,6 +95,25 @@ def converter_para_libsvm(df, coluna_label, caminho_saida):
         print("ℹ️  Text labels converted to numeric automatically.")
 
     print(f"📊 Statistics: {X.shape[0]} samples | {X.shape[1]} attributes (features)")
+    
+    
+    
+
+# --- Transformação do Label (y) garantindo Ordem de Aparição ---
+    # Identifica os valores únicos na ordem exata em que aparecem
+    valores_unicos = y.unique() if hasattr(y, 'unique') else pd.Series(y).unique()
+
+    if len(valores_unicos) == 2:
+        # Dicionário mapeia: 1º elemento -> +1 | 2º elemento -> -1
+        mapeamento = {valores_unicos[0]: 1, valores_unicos[1]: -1}
+        y = y.map(mapeamento)
+        print(f"ℹ️  Labels mapeados: '{valores_unicos[0]}' ➡️ +1 e '{valores_unicos[1]}' ➡️ -1")
+    else:
+        print(f"⚠️ Atenção: O vetor y não possui exatamente 2 classes (Possui: {len(valores_unicos)}).")
+        
+     
+        
+        
 
     try:
         dump_svmlight_file(X, y, caminho_saida, zero_based=False)
