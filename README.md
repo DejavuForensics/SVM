@@ -1,4 +1,4 @@
-# SVM
+# SVM.
 
 ## SVM: Classification/Regression
 
