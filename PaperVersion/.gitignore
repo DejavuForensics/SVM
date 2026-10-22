@@ -1,0 +1,23 @@
+# Ambientes Python e caches
+.venv/
+venv/
+**/.venv/
+**/venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Resultados produzidos pelas execuções
+svm-results/
+**/svm-results/
+**/svm_report_images/
+**/svm_feature_audit_*.csv
+**/svm_report_*.html
+**/globalPruned.libsvm
+**/selected_features.csv
+
+# Arquivos temporários de editores e sistema operacional
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp
