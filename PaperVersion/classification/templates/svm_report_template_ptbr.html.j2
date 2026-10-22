@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+{# Rodada 6.3: macro de tooltip acessível (hover + foco por teclado + aria-label) #}
+{% macro tooltip(text) -%}
+<span class="info-tooltip" tabindex="0" aria-label="{{ text }}">
+    <span aria-hidden="true">ⓘ</span>
+    <span class="tooltip-text" aria-hidden="true">{{ text }}</span>
+</span>
+{%- endmacro %}
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SVM - Relatório de Resultados</title>
+    <link rel="stylesheet" href="{{ css_path }}">
+    <script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <img src="{{ logo_upe_path }}" class="header-logo header-logo-left" alt="Universidade de Pernambuco (UPE)">
+            <h1>SVM - Avaliação de Parâmetros</h1>
+            <img src="{{ logo_ufpe_path }}" class="header-logo header-logo-right" alt="Universidade Federal de Pernambuco (UFPE)">
+            {% set report_subtitle = "Avaliação do cenário executado com métricas de desempenho, estabilidade e custo computacional" if is_single_scenario else "Critério de seleção dos cenários: F1-score, taxa de detecção e menor taxa de falsos positivos" %}
+            <p class="subtitle">{{ report_subtitle }}</p>
+        </div>
+
+        <nav class="report-tabs" role="tablist" aria-label="Seções do relatório">
+            <button type="button" class="report-tab is-active" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" tabindex="0">Visão geral</button>
+            {% if comparative_boxplot_acc_train or comparative_boxplot_acc_test or comparative_boxplot_time_train or comparative_boxplot_time_test %}
+            <button type="button" class="report-tab" role="tab" id="tab-comparisons" aria-controls="panel-comparisons" aria-selected="false" tabindex="-1">Comparativos</button>
+            {% endif %}
+            <button type="button" class="report-tab" role="tab" id="tab-kernels" aria-controls="panel-kernels" aria-selected="false" tabindex="-1">Resumo por kernel</button>
+            <button type="button" class="report-tab" role="tab" id="tab-diagnostics" aria-controls="panel-diagnostics" aria-selected="false" tabindex="-1">Diagnósticos</button>
+            <button type="button" class="report-tab" role="tab" id="tab-audit" aria-controls="panel-audit" aria-selected="false" tabindex="-1">Auditoria</button>
+        </nav>
+
+        <div class="report-tab-panel is-active" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+        {% if config %}
+        <div class="experimental-config">
+            <h2 class="section-title">
+                <span class="title-icon">🧪</span>
+                <span class="title-text">Configuração Experimental</span>
+            </h2>
+            <p class="section-note">
+                <b>Nota:</b> Esta seção registra exatamente os parâmetros usados nesta execução,
+                para fins de reprodutibilidade.
+            </p>
+
+            {# ============================================================
+               PREVIEW: apenas 5 cards principais
+               ============================================================ #}
+            <div class="config-grid">
+                <div class="config-item">
+                    <div class="config-label">Dataset</div>
+                    <div class="config-value">{{ dataset_name }}</div>
+                </div>
+                <div class="config-item">
+                    <div class="config-label">
+                        Validação
+                        {{ tooltip("Validação cruzada estratificada com k=" ~ config.k_folds ~ ". As métricas representam médias e desvios padrão calculados sobre os folds. Seed: " ~ config.seed ~ ".") }}
+                    </div>
+                    <div class="config-value">K-Fold: {{ config.k_folds }} | Seed: {{ config.seed }}</div>
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Kernels executados</div>
+                    <div class="config-value">{{ kernels_run_str }}</div>
+                </div>
+                <div class="config-item">
+                    <div class="config-label">
+                        Grid testado
+                        {%- set has_linear = 'Linear' in kernels_run_str -%}
+                        {%- set has_nonlinear = ('Polinomial' in kernels_run_str) or ('Radial Basis Function' in kernels_run_str) or ('Sigmoide' in kernels_run_str) -%}
+                        {%- if has_linear and not has_nonlinear -%}
+                            {{ tooltip("C controla a regularização do SVM. Nesta execução, o kernel Linear ignora γ no LIBSVM; por isso, γ é registrado internamente como 0.") }}
+                        {%- elif has_linear and has_nonlinear -%}
+                            {{ tooltip("C controla a regularização do SVM. γ é usado nos kernels não lineares, mas é ignorado pelo LIBSVM no kernel Linear, sendo registrado como γ=0 apenas para padronização do relatório.") }}
+                        {%- else -%}
+                            {{ tooltip("C controla a regularização do SVM. γ controla a influência do kernel nos modelos não lineares executados nesta rodada.") }}
+                        {%- endif %}
+                    </div>
+                    <div class="config-value">C: {{ costs_str }} | γ: {{ gammas_str }}</div>
+                </div>
+                <div class="config-item config-item-wide">
+                    <div class="config-label">Controle metodológico</div>
+                    <div class="config-value">
+                        Auditoria fold-safe ativa | Normalização: {{ normalization_display|default('nenhuma') }} | Features suspeitas removidas ({% if is_single_scenario %}cenário avaliado{% else %}melhor cenário{% endif %}):
+                        {% if global_results and global_results.max and global_results.max.suspicious_feature_count_max is defined %}
+                            {{ global_results.max.suspicious_feature_count_max }}
+                        {% else %}0{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {# ============================================================
+               DETALHES (bloco expansível, fechado por padrão)
+               ============================================================ #}
+            <details class="config-details">
+                <summary>Mais detalhes da configuração</summary>
+
+                <div class="config-grid" style="margin-top: 14px;">
+                    <div class="config-item">
+                        <div class="config-label">Gerado em</div>
+                        <div class="config-value">{{ generated_at }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Kernels solicitados</div>
+                        <div class="config-value">{{ kernels_requested_str }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Kernels pulados</div>
+                        <div class="config-value">{{ kernels_skipped_str }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Cache LIBSVM</div>
+                        <div class="config-value">{{ config.cache }} MB</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Epsilon{{ tooltip("Tolerância de parada do LIBSVM. Valores menores tendem a aumentar precisão do ajuste, mas também o tempo de treino.") }}</div>
+                        <div class="config-value">{{ config.epsilon }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Threshold de poda</div>
+                        <div class="config-value">{{ threshold_str }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Leakage threshold{{ tooltip("Features com correlação absoluta igual ou superior a este limiar são marcadas como suspeitas de vazamento e removidas dentro do fold.") }}</div>
+                        <div class="config-value">{{ config.leakage_threshold }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Max time (estimativa)</div>
+                        <div class="config-value">{{ config.max_time }} s</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Modo demo</div>
+                        <div class="config-value">{{ "Sim" if config.demo else "Não" }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Modo quick-test</div>
+                        <div class="config-value">{{ "Sim" if config.quick_test else "Não" }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Forçar execução de todos os kernels</div>
+                        <div class="config-value">{{ "Sim" if config.force_all_kernels else "Não" }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">
+                            Normalização (método)
+                            {%- if config.normalization == 'none' -%}
+                                {{ tooltip("Nenhuma normalização foi aplicada. As features foram usadas com seus valores originais após a seleção fold-safe.") }}
+                            {%- elif config.normalization == 'maxabs' -%}
+                                {{ tooltip("MaxAbs ajustado apenas no treino de cada fold e aplicado ao treino/teste. Reescala cada feature pelo maior valor absoluto do treino, preservando zeros e esparsidade.") }}
+                            {%- elif config.normalization == 'minmax' -%}
+                                {{ tooltip("Min-Max ajustado apenas no treino de cada fold e aplicado ao treino/teste. Usa mínimo e máximo do treino; pode preservar menos esparsidade que MaxAbs.") }}
+                            {%- endif %}
+                        </div>
+                        <div class="config-value">{{ normalization_display|default('nenhuma') }}</div>
+                    </div>
+                    <div class="config-item">
+                        <div class="config-label">Arquivo CSV de auditoria{{ tooltip("CSV gerado por fold. Registra o status das features: selected, not_selected, suspicious_removed e constant, usando apenas o treino do fold.") }}</div>
+                        <div class="config-value">{{ audit_info.audit_csv if (audit_info and audit_info.audit_csv) else 'Não gerado' }}</div>
+                    </div>
+                    <div class="config-item">
+                        {% set selection_criterion_tooltip = "As métricas do cenário avaliado são apresentadas com foco em F1-score, taxa de detecção/recall e taxa de falsos positivos." if is_single_scenario else "O melhor cenário é escolhido priorizando F1-score, depois taxa de detecção/recall e, por fim, menor taxa de falsos positivos." %}
+                        <div class="config-label">Critério de seleção{{ tooltip(selection_criterion_tooltip) }}</div>
+                        <div class="config-value">F1-score → recall/detecção → menor FPR</div>
+                    </div>
+                </div>
+
+                {% if config.force_all_kernels %}
+                <p class="section-note">
+                    <b>Forçar execução de todos os kernels (ativado):</b> a estimativa de tempo foi ignorada por escolha do usuário.
+                </p>
+                {% endif %}
+            </details>
+        </div>
+        {% endif %}
+
+        {# Rodada 8.3: nova seção — Pré-processamento fold-safe #}
+        {% if preprocessing_summary is defined and preprocessing_summary %}
+        <div class="kernels-section" style="margin-top: 30px;">
+            <h2 class="section-title">
+                <span class="title-icon">🧪</span>
+                <span class="title-text">Pré-processamento fold-safe: seleção e normalização</span>
+            </h2>
+            <p class="section-note">
+                Resumo das etapas aplicadas dentro de cada fold antes do treinamento.
+                A seleção/auditoria de features e a normalização são ajustadas apenas com os dados
+                de treino do fold, evitando vazamento de dados. Os valores por fold referem-se ao
+                {% if is_single_scenario %}cenário avaliado{% else %}melhor cenário global{% endif %}.
+            </p>
+
+            <div class="config-grid">
+                <div class="config-item">
+                    <div class="config-label">
+                        Método de normalização
+                        {{ tooltip("Método aplicado após a seleção/auditoria. O scaler é ajustado apenas no treino do fold e aplicado em treino e teste.") }}
+                    </div>
+                    <div class="config-value">{{ preprocessing_summary.normalization_method }}</div>
+                </div>
+                <div class="config-item">
+                    <div class="config-label">
+                        Dimensionalidade original
+                        {{ tooltip("Número inferido a partir do maior ID de feature encontrado no arquivo LIBSVM de entrada. Não representa necessariamente o total de features distintas do dataset — apenas o maior índice observado.") }}
+                    </div>
+                    <div class="config-value">{{ preprocessing_summary.total_features_original }}</div>
+                </div>
+                <div class="config-item">
+                    <div class="config-label">
+                        Features usadas após seleção/auditoria
+                        {{ tooltip("Média ± desvio padrão do número de features que permaneceram após a seleção/auditoria fold-safe, ao longo dos folds.") }}
+                    </div>
+                    <div class="config-value">
+                        {{ "%.2f"|format(preprocessing_summary.features_after_selection_mean) }}
+                        &plusmn; {{ "%.2f"|format(preprocessing_summary.features_after_selection_std) }}
+                        <small>por fold</small>
+                    </div>
+                </div>
+                <div class="config-item">
+                    <div class="config-label">
+                        Features normalizadas
+                        {{ tooltip("Média ± desvio padrão do número de features enviadas ao scaler no fold, quando a normalização é diferente de 'nenhuma'.") }}
+                    </div>
+                    <div class="config-value">
+                        {% if preprocessing_summary.normalization_applied %}
+                        {{ "%.2f"|format(preprocessing_summary.features_normalized_mean) }}
+                        &plusmn; {{ "%.2f"|format(preprocessing_summary.features_normalized_std) }}
+                        <small>por fold</small>
+                        {% else %}
+                        Não aplicado
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="stats-grid">
+            {% if is_single_scenario %}
+            {# Rodada 7.3C: cenário único — apenas um card "Cenário Avaliado" #}
+            <div class="stat-card best">
+                <div class="card-header">
+                    <div class="card-icon best">🧪</div>
+                    <div class="card-title">Cenário Avaliado</div>
+                </div>
+
+                <div class="metric-row"><span class="metric-label">Config (C, γ)</span><span class="metric-value best">{{ global_results.max.n_hidden }}</span></div>
+                <div class="metric-row"><span class="metric-label">Kernel</span><span class="metric-value best">{{ global_results.max.act }}</span></div>
+
+                <div class="metric-row"><span class="metric-label">Acc Treino</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.accuracy_train) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_train) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">Acc Teste</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.accuracy_test) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_test) }}%</span></div>
+
+                {% if kernels_full_metrics %}
+                <div class="metric-row metric-row-emphasis"><span class="metric-label">F1-score</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.f1_score) }} &plusmn; {{ "%.4f"|format(global_results.max.std_f1_score) }}</span></div>
+                <div class="metric-row"><span class="metric-label">Taxa de Detecção</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.detection_rate * 100) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_detection_rate * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">Taxa de Falsos Positivos</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.false_positive_rate * 100) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_false_positive_rate * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">Precisão</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.precision * 100) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_precision * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">F1-Macro</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.f1_macro) }} &plusmn; {{ "%.4f"|format(global_results.max.std_f1_macro) }}</span></div>
+                <div class="metric-row"><span class="metric-label">Balanced Accuracy</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.balanced_accuracy * 100) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_balanced_accuracy * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">MCC</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.mcc) }} &plusmn; {{ "%.4f"|format(global_results.max.std_mcc) }}</span></div>
+                {% endif %}
+
+                <div class="metric-row">
+                    <span class="metric-label">Variabilidade</span>
+                    <span class="metric-value best">
+                        <span class="std-indicator std-{{ global_results.max.std_class|default('low') }}" title="{{ global_results.max.std_tooltip|default('') }}"></span>
+                        {{ global_results.max.std_short|default('—') }}
+                    </span>
+                </div>
+
+                <div class="metric-row"><span class="metric-label">Tempo Treino</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.time_train) }}s &plusmn; {{ "%.4f"|format(global_results.max.std_time_train) }}s</span></div>
+                <div class="metric-row"><span class="metric-label">Tempo Teste</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.time_test) }}s &plusmn; {{ "%.4f"|format(global_results.max.std_time_test) }}s</span></div>
+
+                {% if cm_global_best %}
+                <div class="cm-container"><img class="cm-image" src="{{ cm_global_best }}" alt="Matriz de confusão - cenário avaliado"></div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="stat-card best">
+                <div class="card-header">
+                    <div class="card-icon best">🏆</div>
+                    <div class="card-title">Melhor Performance Global</div>
+                </div>
+
+                <div class="metric-row"><span class="metric-label">Config (C, γ)</span><span class="metric-value best">{{ global_results.max.n_hidden }}</span></div>
+                <div class="metric-row"><span class="metric-label">Kernel</span><span class="metric-value best">{{ global_results.max.act }}</span></div>
+
+                <div class="metric-row"><span class="metric-label">Acc Treino</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.accuracy_train) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_train) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">Acc Teste</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.accuracy_test) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_test) }}%</span></div>
+
+                {% if kernels_full_metrics %}
+                <div class="metric-row metric-row-emphasis"><span class="metric-label">F1-score</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.f1_score) }} &plusmn; {{ "%.4f"|format(global_results.max.std_f1_score) }}</span></div>
+                <div class="metric-row"><span class="metric-label">Taxa de Detecção</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.detection_rate * 100) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_detection_rate * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">Taxa de Falsos Positivos</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.false_positive_rate * 100) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_false_positive_rate * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">Precisão</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.precision * 100) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_precision * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">F1-Macro</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.f1_macro) }} &plusmn; {{ "%.4f"|format(global_results.max.std_f1_macro) }}</span></div>
+                <div class="metric-row"><span class="metric-label">Balanced Accuracy</span><span class="metric-value best">{{ "%.2f"|format(global_results.max.balanced_accuracy * 100) }}% &plusmn; {{ "%.2f"|format(global_results.max.std_balanced_accuracy * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">MCC</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.mcc) }} &plusmn; {{ "%.4f"|format(global_results.max.std_mcc) }}</span></div>
+                {% endif %}
+
+                <div class="metric-row">
+                    <span class="metric-label">Variabilidade</span>
+                    <span class="metric-value best">
+                        <span class="std-indicator std-{{ global_results.max.std_class|default('low') }}" title="{{ global_results.max.std_tooltip|default('') }}"></span>
+                        {{ global_results.max.std_short|default('—') }}
+                    </span>
+                </div>
+
+                <div class="metric-row"><span class="metric-label">Tempo Treino</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.time_train) }}s &plusmn; {{ "%.4f"|format(global_results.max.std_time_train) }}s</span></div>
+                <div class="metric-row"><span class="metric-label">Tempo Teste</span><span class="metric-value best">{{ "%.4f"|format(global_results.max.time_test) }}s &plusmn; {{ "%.4f"|format(global_results.max.std_time_test) }}s</span></div>
+
+                {% if cm_global_best %}
+                <div class="cm-container"><img class="cm-image" src="{{ cm_global_best }}" alt="Matriz de confusão - melhor cenário global"></div>
+                {% endif %}
+            </div>
+
+            <div class="stat-card worst">
+                <div class="card-header">
+                    <div class="card-icon worst">⚠️</div>
+                    <div class="card-title">Pior Performance Global</div>
+                </div>
+
+                <div class="metric-row"><span class="metric-label">Config (C, γ)</span><span class="metric-value worst">{{ global_results.min.n_hidden }}</span></div>
+                <div class="metric-row"><span class="metric-label">Kernel</span><span class="metric-value worst">{{ global_results.min.act }}</span></div>
+
+                <div class="metric-row"><span class="metric-label">Acc Treino</span><span class="metric-value worst">{{ "%.2f"|format(global_results.min.accuracy_train) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_train) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">Acc Teste</span><span class="metric-value worst">{{ "%.2f"|format(global_results.min.accuracy_test) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_test) }}%</span></div>
+
+                {% if kernels_full_metrics %}
+                <div class="metric-row metric-row-emphasis"><span class="metric-label">F1-score</span><span class="metric-value worst">{{ "%.4f"|format(global_results.min.f1_score) }} &plusmn; {{ "%.4f"|format(global_results.min.std_f1_score) }}</span></div>
+                <div class="metric-row"><span class="metric-label">Taxa de Detecção</span><span class="metric-value worst">{{ "%.2f"|format(global_results.min.detection_rate * 100) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_detection_rate * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">Taxa de Falsos Positivos</span><span class="metric-value worst">{{ "%.2f"|format(global_results.min.false_positive_rate * 100) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_false_positive_rate * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">Precisão</span><span class="metric-value worst">{{ "%.2f"|format(global_results.min.precision * 100) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_precision * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">F1-Macro</span><span class="metric-value worst">{{ "%.4f"|format(global_results.min.f1_macro) }} &plusmn; {{ "%.4f"|format(global_results.min.std_f1_macro) }}</span></div>
+                <div class="metric-row"><span class="metric-label">Balanced Accuracy</span><span class="metric-value worst">{{ "%.2f"|format(global_results.min.balanced_accuracy * 100) }}% &plusmn; {{ "%.2f"|format(global_results.min.std_balanced_accuracy * 100) }}%</span></div>
+                <div class="metric-row"><span class="metric-label">MCC</span><span class="metric-value worst">{{ "%.4f"|format(global_results.min.mcc) }} &plusmn; {{ "%.4f"|format(global_results.min.std_mcc) }}</span></div>
+                {% endif %}
+
+                <div class="metric-row">
+                    <span class="metric-label">Variabilidade</span>
+                    <span class="metric-value worst">
+                        <span class="std-indicator std-{{ global_results.min.std_class|default('low') }}" title="{{ global_results.min.std_tooltip|default('') }}"></span>
+                        {{ global_results.min.std_short|default('—') }}
+                    </span>
+                </div>
+
+                <div class="metric-row"><span class="metric-label">Tempo Treino</span><span class="metric-value worst">{{ "%.4f"|format(global_results.min.time_train) }}s &plusmn; {{ "%.4f"|format(global_results.min.std_time_train) }}s</span></div>
+                <div class="metric-row"><span class="metric-label">Tempo Teste</span><span class="metric-value worst">{{ "%.4f"|format(global_results.min.time_test) }}s &plusmn; {{ "%.4f"|format(global_results.min.std_time_test) }}s</span></div>
+
+                {% if cm_global_worst %}
+                <div class="cm-container"><img class="cm-image" src="{{ cm_global_worst }}" alt="Matriz de confusão - pior cenário global"></div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        </div>
+
+        <div class="report-tab-panel" id="panel-kernels" role="tabpanel" aria-labelledby="tab-kernels">
+        <div class="kernels-section">
+            <h2 class="section-title">Resumo por Kernel</h2>
+            <p class="section-note">
+                {% if is_single_scenario %}
+                <b>Nota:</b> Esta seção apresenta o <b>cenário avaliado</b> para o kernel executado.
+                As métricas exibidas representam médias e desvios padrão calculados ao longo dos folds.
+                A <b>Variabilidade</b> indica a estabilidade do modelo, calculada a partir do desvio padrão da acurácia de teste no K-Fold.
+                {% else %}
+                <b>Nota:</b> Os cenários <b>Melhor</b> e <b>Pior</b> são definidos por um critério composto baseado em
+                <b>F1-score</b>, <b>taxa de detecção</b> e <b>taxa de falsos positivos</b>.
+                A <b>Variabilidade</b> indica a estabilidade do modelo, calculada a partir do desvio padrão da acurácia de teste no K-Fold.
+                {% endif %}
+            </p>
+
+            {% if act_results|length > 1 %}
+            <label class="kernel-label" for="kernel-summary-select">Selecione o kernel</label>
+            <select class="kernel-select" id="kernel-summary-select" data-kernel-picker="kernel-summary-items">
+                {% for act_name in act_results %}<option value="{{ loop.index0 }}">{{ act_name }}</option>{% endfor %}
+            </select>
+            {% endif %}
+            <div id="kernel-summary-items">
+            {% for act_name, data in act_results.items() %}
+            <div class="kernel-group" data-kernel-item="{{ loop.index0 }}">
+                <div class="kernel-title">Kernel: {{ act_name }}</div>
+                <div class="kernel-results">
+
+                    {% if data.max_test %}
+                    <div class="result-card best">
+                        <div class="result-header">
+                            <div class="result-icon best">{% if is_single_scenario %}🧪{% else %}✅{% endif %}</div>
+                            <div class="result-title">{% if is_single_scenario %}Cenário Avaliado{% else %}Melhor Cenário{% endif %}</div>
+                        </div>
+
+                        <ul class="metrics-list">
+                            <li><span class="metric-name">Config (C, γ):</span><span class="metric-val">{{ data.max_test.n_hidden }}</span></li>
+                            <li><span class="metric-name">Kernel:</span><span class="metric-val">{{ act_name }}</span></li>
+                            <li><span class="metric-name">Acc Treino:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_train) }}%</span></li>
+                            <li><span class="metric-name">Acc Teste:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_test) }}%</span></li>
+                            {% if kernels_full_metrics %}
+                            <li class="metric-row-emphasis-inline"><span class="metric-name">F1-score:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.f1_score) }} &plusmn; {{ "%.4f"|format(data.max_test.std_f1_score) }}</span></li>
+                            <li><span class="metric-name">Taxa de Detecção:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.detection_rate * 100) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_detection_rate * 100) }}%</span></li>
+                            <li><span class="metric-name">Taxa de Falsos Positivos:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.false_positive_rate * 100) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_false_positive_rate * 100) }}%</span></li>
+                            <li><span class="metric-name">Precisão:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.precision * 100) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_precision * 100) }}%</span></li>
+                            <li><span class="metric-name">F1-Macro:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.f1_macro) }} &plusmn; {{ "%.4f"|format(data.max_test.std_f1_macro) }}</span></li>
+                            <li><span class="metric-name">Balanced Accuracy:</span><span class="metric-val">{{ "%.2f"|format(data.max_test.balanced_accuracy * 100) }}% &plusmn; {{ "%.2f"|format(data.max_test.std_balanced_accuracy * 100) }}%</span></li>
+                            <li><span class="metric-name">MCC:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.mcc) }} &plusmn; {{ "%.4f"|format(data.max_test.std_mcc) }}</span></li>
+                            {% endif %}
+                            <li>
+                                <span class="metric-name">Variabilidade:</span>
+                                <span class="metric-val">
+                                    <span class="std-indicator std-{{ data.max_test.std_class|default('low') }}" title="{{ data.max_test.std_tooltip|default('') }}"></span>
+                                    {{ data.max_test.std_short|default('—') }}
+                                </span>
+                            </li>
+                            <li><span class="metric-name">Tempo Treino:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.time_train) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_train) }}s</span></li>
+                            <li><span class="metric-name">Tempo Teste:</span><span class="metric-val">{{ "%.4f"|format(data.max_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.max_test.std_time_test) }}s</span></li>
+                        </ul>
+
+                        {% if act_cm.get(act_name) and act_cm[act_name].best %}
+                        <div class="cm-container"><img class="cm-image" src="{{ act_cm[act_name].best }}" alt="Matriz de confusão - {% if is_single_scenario %}cenário avaliado{% else %}melhor cenário{% endif %} do kernel {{ act_name }}"></div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if data.min_test and not is_single_scenario %}
+                    <div class="result-card worst">
+                        <div class="result-header">
+                            <div class="result-icon worst">⚠️</div>
+                            <div class="result-title">Pior Cenário</div>
+                        </div>
+
+                        <ul class="metrics-list">
+                            <li><span class="metric-name">Config (C, γ):</span><span class="metric-val">{{ data.min_test.n_hidden }}</span></li>
+                            <li><span class="metric-name">Kernel:</span><span class="metric-val">{{ act_name }}</span></li>
+                            <li><span class="metric-name">Acc Treino:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.accuracy_train) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_train) }}%</span></li>
+                            <li><span class="metric-name">Acc Teste:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.accuracy_test) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_test) }}%</span></li>
+                            {% if kernels_full_metrics %}
+                            <li class="metric-row-emphasis-inline"><span class="metric-name">F1-score:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.f1_score) }} &plusmn; {{ "%.4f"|format(data.min_test.std_f1_score) }}</span></li>
+                            <li><span class="metric-name">Taxa de Detecção:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.detection_rate * 100) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_detection_rate * 100) }}%</span></li>
+                            <li><span class="metric-name">Taxa de Falsos Positivos:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.false_positive_rate * 100) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_false_positive_rate * 100) }}%</span></li>
+                            <li><span class="metric-name">Precisão:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.precision * 100) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_precision * 100) }}%</span></li>
+                            <li><span class="metric-name">F1-Macro:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.f1_macro) }} &plusmn; {{ "%.4f"|format(data.min_test.std_f1_macro) }}</span></li>
+                            <li><span class="metric-name">Balanced Accuracy:</span><span class="metric-val">{{ "%.2f"|format(data.min_test.balanced_accuracy * 100) }}% &plusmn; {{ "%.2f"|format(data.min_test.std_balanced_accuracy * 100) }}%</span></li>
+                            <li><span class="metric-name">MCC:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.mcc) }} &plusmn; {{ "%.4f"|format(data.min_test.std_mcc) }}</span></li>
+                            {% endif %}
+                            <li>
+                                <span class="metric-name">Variabilidade:</span>
+                                <span class="metric-val">
+                                    <span class="std-indicator std-{{ data.min_test.std_class|default('low') }}" title="{{ data.min_test.std_tooltip|default('') }}"></span>
+                                    {{ data.min_test.std_short|default('—') }}
+                                </span>
+                            </li>
+                            <li><span class="metric-name">Tempo Treino:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.time_train) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_train) }}s</span></li>
+                            <li><span class="metric-name">Tempo Teste:</span><span class="metric-val">{{ "%.4f"|format(data.min_test.time_test) }}s &plusmn; {{ "%.4f"|format(data.min_test.std_time_test) }}s</span></li>
+                        </ul>
+
+                        {% if act_cm.get(act_name) and act_cm[act_name].worst %}
+                        <div class="cm-container"><img class="cm-image" src="{{ act_cm[act_name].worst }}" alt="Matriz de confusão - pior cenário do kernel {{ act_name }}"></div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endfor %}
+            </div>
+        </div>
+        </div>
+
+        {% if comparative_boxplot_acc_train or comparative_boxplot_acc_test or comparative_boxplot_time_train or comparative_boxplot_time_test %}
+        <div class="report-tab-panel" id="panel-comparisons" role="tabpanel" aria-labelledby="tab-comparisons">
+        {% if comparative_boxplot_acc_train or comparative_boxplot_acc_test %}
+        <div class="kernels-section" style="margin-top: 30px;">
+            <h2 class="section-title">
+                <span class="title-icon">📊</span>
+                <span class="title-text">{% if is_single_scenario %}Distribuição de Acurácia do Cenário Avaliado{% else %}Distribuição de Acurácia dos Melhores Cenários por Kernel{% endif %}</span>
+            </h2>
+            <p class="section-note">
+                {% if is_single_scenario %}
+                <b>Nota:</b> Os boxplots abaixo mostram a distribuição da acurácia de treino e teste do
+                <b>cenário avaliado</b> ao longo dos folds da validação cruzada estratificada.
+                {% else %}
+                <b>Nota:</b> Os boxplots abaixo comparam a distribuição da acurácia de treino e teste dos
+                <b>melhores cenários de cada kernel</b> ao longo dos folds da validação cruzada estratificada.
+                {% endif %}
+            </p>
+
+            <div class="boxplot-grid">
+                {% if comparative_boxplot_acc_train %}
+                <div class="boxplot-card">
+                    <img class="boxplot-img" src="{{ comparative_boxplot_acc_train }}" alt="{% if is_single_scenario %}Distribuição da acurácia de treino do cenário avaliado{% else %}Comparativo da acurácia de treino entre os melhores cenários por kernel{% endif %}">
+                </div>
+                {% endif %}
+
+                {% if comparative_boxplot_acc_test %}
+                <div class="boxplot-card">
+                    <img class="boxplot-img" src="{{ comparative_boxplot_acc_test }}" alt="{% if is_single_scenario %}Distribuição da acurácia de teste do cenário avaliado{% else %}Comparativo da acurácia de teste entre os melhores cenários por kernel{% endif %}">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+
+{% if comparative_boxplot_time_train or comparative_boxplot_time_test %}
+<div class="kernels-section" style="margin-top: 30px;">
+    <h2 class="section-title">
+        <span class="title-icon">📈</span>
+        <span class="title-text">{% if is_single_scenario %}Distribuição de Tempo do Cenário Avaliado{% else %}Comparativo entre os Melhores Cenários por Kernel{% endif %}</span>
+    </h2>
+    <p class="section-note">
+        {% if is_single_scenario %}
+        <b>Nota:</b> Os boxplots abaixo mostram a distribuição dos tempos de treino e teste do
+        <b>cenário avaliado</b> ao longo dos folds.
+        {% else %}
+        <b>Nota:</b> Os boxplots abaixo comparam os <b>melhores cenários de cada kernel</b>,
+        considerando os tempos observados ao longo dos folds. Essa visualização complementa
+        a análise do melhor cenário global e permite comparar o custo computacional entre kernels.
+        {% endif %}
+    </p>
+
+    <div class="boxplot-grid">
+        {% if comparative_boxplot_time_train %}
+        <div class="boxplot-card">
+            <img class="boxplot-img"
+                 src="{{ comparative_boxplot_time_train }}"
+                 alt="{% if is_single_scenario %}Distribuição do tempo de treino do cenário avaliado{% else %}Comparativo do tempo de treino entre os melhores cenários por kernel{% endif %}">
+        </div>
+        {% endif %}
+
+        {% if comparative_boxplot_time_test %}
+        <div class="boxplot-card">
+            <img class="boxplot-img"
+                 src="{{ comparative_boxplot_time_test }}"
+                 alt="{% if is_single_scenario %}Distribuição do tempo de teste do cenário avaliado{% else %}Comparativo do tempo de teste entre os melhores cenários por kernel{% endif %}">
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+        </div>
+        {% endif %}
+
+        <div class="report-tab-panel" id="panel-audit" role="tabpanel" aria-labelledby="tab-audit">
+        {# ============================================================
+           Seção de Auditoria fold-safe (Rodada 5; reformulada na Rodada 6.4)
+           ============================================================ #}
+        <div class="kernels-section" style="margin-top: 40px;">
+            <h2 class="section-title">
+                <span class="title-icon">🛡️</span>
+                <span class="title-text">Auditoria de Suspeita de Vazamento de Features</span>
+            </h2>
+            <p class="section-note">
+                Resumo da auditoria fold-safe de features com correlação excessivamente alta com o rótulo.
+                O HTML apresenta os totais de remoção
+                {% if is_single_scenario %}no cenário avaliado{% else %}no melhor cenário global{% endif %};
+                o CSV de auditoria registra o detalhe por feature, fold, kernel, C e gamma.
+                Essa auditoria detecta suspeitas por correlação elevada, não todos os tipos possíveis de vazamento de dados.
+            </p>
+
+            {% set _susp_mean = global_results.max.suspicious_feature_count_mean if (global_results and global_results.max and global_results.max.suspicious_feature_count_mean is defined) else 0 %}
+            {% set _susp_max  = global_results.max.suspicious_feature_count_max  if (global_results and global_results.max and global_results.max.suspicious_feature_count_max  is defined) else 0 %}
+
+            <div class="config-grid">
+                <div class="config-item">
+                    <div class="config-label">
+                        Status da auditoria
+                        {%- if _susp_max == 0 -%}
+                            {{ tooltip("Nenhuma feature atingiu o limiar de correlação definido para suspeita de vazamento " ~ ("no cenário avaliado." if is_single_scenario else "no melhor cenário global.")) }}
+                        {%- else -%}
+                            {{ tooltip("Uma ou mais features atingiram o limiar de correlação definido para suspeita de vazamento e foram removidas dentro dos folds.") }}
+                        {%- endif %}
+                    </div>
+                    <div class="config-value">
+                        {% if _susp_max == 0 -%}
+                            Sem remoções suspeitas
+                        {%- else -%}
+                            Features suspeitas removidas
+                        {%- endif %}
+                    </div>
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Média de features suspeitas removidas por fold</div>
+                    <div class="config-value">{{ "%.2f"|format(_susp_mean) }}</div>
+                </div>
+                <div class="config-item">
+                    <div class="config-label">Máximo de features suspeitas removidas em um fold</div>
+                    <div class="config-value">{{ _susp_max }}</div>
+                </div>
+                <div class="config-item">
+                    <div class="config-label">
+                        CSV detalhado da auditoria
+                        {{ tooltip("Arquivo CSV com o status de cada feature por fold, kernel, C e gamma.") }}
+                    </div>
+                    <div class="config-value">{{ audit_info.audit_csv if (audit_info and audit_info.audit_csv) else 'Não gerado' }}</div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="report-tab-panel" id="panel-diagnostics" role="tabpanel" aria-labelledby="tab-diagnostics">
+        {% if diagnostics %}
+        {# Rodada 7.2C: mapa visual por status (renderização leve e dinâmica) #}
+        {% set status_meta = {
+            'excellent': {'label': 'Excelente',  'icon': '🏆', 'class': 'status-excellent'},
+            'good':      {'label': 'Bom',        'icon': '✅', 'class': 'status-good'},
+            'watch':     {'label': 'Observação', 'icon': 'ℹ️', 'class': 'status-watch'},
+            'warning':   {'label': 'Atenção',    'icon': '⚠️', 'class': 'status-warning'},
+            'critical':  {'label': 'Crítico',    'icon': '⛔', 'class': 'status-critical'},
+            'unstable':  {'label': 'Instável',   'icon': '📉', 'class': 'status-unstable'},
+            'poor':      {'label': 'Fraco',      'icon': '⚠️', 'class': 'status-poor'},
+            'skipped':   {'label': 'Pulado',     'icon': '⏭️', 'class': 'status-skipped'},
+            'unknown':   {'label': 'Indefinido', 'icon': 'ℹ️', 'class': 'status-unknown'}
+        } %}
+        <div class="kernels-section" style="margin-top: 40px;">
+            <h2 class="section-title">
+                <span class="title-icon">🔍</span>
+                <span class="title-text">Diagnósticos Automáticos</span>
+            </h2>
+
+            <p class="section-note">
+                Os diagnósticos são interpretativos e dependem da execução. Eles classificam a configuração avaliada,
+                considerando dataset, kernel, hiperparâmetros, normalização e folds — não o kernel de forma absoluta.
+            </p>
+
+            {% if diagnostics|length > 1 %}
+            <label class="kernel-label" for="kernel-diagnostics-select">Selecione o kernel</label>
+            <select class="kernel-select" id="kernel-diagnostics-select" data-kernel-picker="kernel-diagnostics-items">
+                {% for kernel_name in diagnostics %}<option value="{{ loop.index0 }}">{{ kernel_name }}</option>{% endfor %}
+            </select>
+            {% endif %}
+            <div id="kernel-diagnostics-items">
+
+                {% for kernel_name, diag in diagnostics.items() %}
+                {% set meta = status_meta.get(diag.status, status_meta['unknown']) %}
+                {% set status_label = diag.status_label if diag.status_label else meta.label %}
+                <article class="diagnosis-card {{ meta.class }}" data-kernel-item="{{ loop.index0 }}">
+                    <header class="diagnosis-header">
+                        <span class="diagnosis-icon" aria-hidden="true">{{ meta.icon }}</span>
+                        <div class="diagnosis-headings">
+                            <h3 class="diagnosis-title">{{ kernel_name }}</h3>
+                            {% if diag.problem %}
+                            <p class="diagnosis-problem">{{ diag.problem }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="diagnosis-status-pill {{ meta.class }}">{{ status_label }}</span>
+                    </header>
+
+                    {% if diag.criterion %}
+                    <div class="diagnosis-block">
+                        <div class="diagnosis-block-title">Critério acionado</div>
+                        <div class="diagnosis-block-body">{{ diag.criterion }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if diag.evidence %}
+                    <div class="diagnosis-block">
+                        <div class="diagnosis-block-title">Evidências observadas</div>
+                        <ul class="diagnosis-evidence-list">
+                            {% for item in diag.evidence %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    {% if diag.interpretation %}
+                    <div class="diagnosis-block">
+                        <div class="diagnosis-block-title">Interpretação</div>
+                        <div class="diagnosis-block-body">{{ diag.interpretation }}</div>
+                    </div>
+                    {% elif diag.explanation %}
+                    <div class="diagnosis-block">
+                        <div class="diagnosis-block-title">Explicação</div>
+                        <div class="diagnosis-block-body">{{ diag.explanation }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if diag.recommendation %}
+                    <div class="diagnosis-block diagnosis-block-recommendation">
+                        <div class="diagnosis-block-title">Recomendação</div>
+                        <div class="diagnosis-block-body">{{ diag.recommendation }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if diag.thresholds_used %}
+                    <div class="diagnosis-thresholds">
+                        <span class="diagnosis-thresholds-label">Limiares usados:</span>
+                        {% for t in diag.thresholds_used %}<code class="diagnosis-threshold-pill">{{ t }}</code>{% if not loop.last %} {% endif %}{% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="diagnosis-thresholds">
+                        <span class="diagnosis-thresholds-label">Limiares usados:</span>
+                        <span class="diagnosis-thresholds-empty">Não aplicável</span>
+                    </div>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="kernels-section" style="margin-top: 40px;">
+            <h2 class="section-title">
+                <span class="title-icon">📊</span>
+                <span class="title-text">Guia: Entendendo a Variabilidade (Desvio Padrão)</span>
+            </h2>
+
+            <div class="stats-grid">
+                <div class="stat-card" style="border-left: 10px solid #28a745;">
+                    <div class="card-header"><div class="card-icon" style="background: #28a745;">✅</div><div class="card-title">Variabilidade Baixa (Desvio &lt; 2%)</div></div>
+                    <p style="font-size: 1em; color: #555; line-height: 1.5;">
+                        <b>Altamente estável.</b> O modelo produz resultados consistentes independentemente da forma como os dados são particionados.
+                    </p>
+                </div>
+
+                <div class="stat-card" style="border-left: 10px solid #ffc107;">
+                    <div class="card-header"><div class="card-icon" style="background: #ffc107; color: #333;">⚠️</div><div class="card-title">Variabilidade Moderada (Desvio 2% - 10%)</div></div>
+                    <p style="font-size: 1em; color: #555; line-height: 1.5;">
+                        <b>Variância aceitável.</b> Indica sensibilidade moderada à composição dos folds, sem caracterizar necessariamente comportamento instável.
+                    </p>
+                </div>
+
+                <div class="stat-card" style="border-left: 10px solid #dc3545;">
+                    <div class="card-header"><div class="card-icon" style="background: #dc3545;">⛔</div><div class="card-title">Variabilidade Alta (Desvio &gt; 10%)</div></div>
+                    <p style="font-size: 1em; color: #555; line-height: 1.5;">
+                        <b>Instável.</b> A performance do modelo oscila bastante entre os folds, sugerindo sensibilidade à partição dos dados.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+    <script>{% include "svm_report_tabs.js" %}</script>
+</body>
+</html>
